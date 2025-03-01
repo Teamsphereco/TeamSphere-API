@@ -1,16 +1,15 @@
-package co.teamsphere.api.response;
+package co.teamsphere.api.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-public class AuthResponse {
-    private String jwt;
+public class RefreshTokenRequest {
+    // @NotNull
     private String refreshToken;
-    private boolean status;
 }

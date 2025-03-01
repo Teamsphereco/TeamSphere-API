@@ -45,18 +45,18 @@ public class UserController {
 
     @Operation(summary = "Update user details", description = "Updates the details of a user identified by the given user ID.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User updated successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = UserDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+                responseCode = "200",
+                description = "User updated successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = UserDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PutMapping(value = "/update/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDTO> updateUserHandler(@ModelAttribute UpdateUserRequest req, @PathVariable UUID userId) throws UserException {
@@ -77,18 +77,18 @@ public class UserController {
 
     @Operation(summary = "Get user profile", description = "Fetches the profile of the currently authenticated user.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "202",
-                    description = "User profile retrieved successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = UserDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+                responseCode = "202",
+                description = "User profile retrieved successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = UserDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getUserProfileHandler(@RequestHeader("Authorization") String jwt) {
@@ -112,18 +112,18 @@ public class UserController {
 
     @Operation(summary = "Search users by name", description = "Searches for users whose names match the provided query.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "202",
-                    description = "Search completed successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = HashSet.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "400", description = "Invalid request"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+                responseCode = "202",
+                description = "Search completed successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = HashSet.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "400", description = "Invalid request"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/search")
     public ResponseEntity<HashSet<UserDTO>> searchUsersByName(@RequestParam("name") String name) {

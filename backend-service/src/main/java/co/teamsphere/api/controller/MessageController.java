@@ -46,19 +46,19 @@ public class MessageController {
 
     @Operation(summary = "Send a message", description = "Sends a message to a user or group chat.")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Message sent successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = MessageDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "400", description = "Bad request"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+                        responseCode = "200",
+                        description = "Message sent successfully",
+                        content = @Content(
+                                mediaType = "application/json",
+                                schema = @Schema(
+                                        implementation = MessageDTO.class
+                                )
+                        )
+                ),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "400", description = "Bad request"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/create")
     public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException {
@@ -84,18 +84,18 @@ public class MessageController {
 
     @Operation(summary = "Get messages for a chat", description = "Retrieves all messages for a specific chat.")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
-            @ApiResponse(
-                    responseCode = "202",
-                    description = "Messages retrieved successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = List.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "Chat not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+                responseCode = "202",
+                description = "Messages retrieved successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = List.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "404", description = "Chat not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/chat/{chatId}")
     public ResponseEntity<List<MessageDTO>> getChatsMessageHandler(@PathVariable UUID chatId) throws ChatException {
@@ -117,18 +117,18 @@ public class MessageController {
 
     @Operation(summary = "Delete a message", description = "Deletes a specific message by its unique ID.")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
-            @ApiResponse(
-                    responseCode = "202",
-                    description = "Message deleted successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ApiResponses.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "Message not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+                        responseCode = "202",
+                        description = "Message deleted successfully",
+                        content = @Content(
+                                mediaType = "application/json",
+                                schema = @Schema(
+                                        implementation = ApiResponses.class
+                                )
+                        )
+                ),
+        @ApiResponse(responseCode = "404", description = "Message not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{messageId}")
     public ResponseEntity<ApiResponses> deleteMessageHandler(@PathVariable UUID messageId) throws MessageException {

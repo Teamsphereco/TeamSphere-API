@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import co.teamsphere.api.response.CloudflareApiResponse;
 import co.teamsphere.api.services.CloudflareApiService;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -63,7 +62,7 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
         ResponseEntity<CloudflareApiResponse> response = null;
 
         try {
-            log.info("Sending ImageID: {} request to URL: {}", body.get("file"), url);
+            log.info("Sending Image request to URL: {}", url);
             response = restTemplate.postForEntity(url, requestEntity, CloudflareApiResponse.class);
             if (response.getStatusCode() == HttpStatus.OK) {
                 log.info("{} uploaded successfully to Cloudflare.", body.get("file"));

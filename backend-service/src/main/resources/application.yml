@@ -7,6 +7,9 @@ logging:
     org:
       org.springframework.web.servlet.DispatcherServlet: OFF
 spring:
+  threads:
+    virtual:
+      enable: true
   datasource:
     driver-class-name: ''
     password: ''

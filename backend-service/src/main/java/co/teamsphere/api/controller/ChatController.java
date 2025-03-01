@@ -56,20 +56,21 @@ public class ChatController {
 
     @PostMapping("/single")
     @Operation(summary = "Create a single chat",
-            description = "Creates a single chat between the authenticated user and another user.")
+        description = "Creates a single chat between the authenticated user and another user."
+        )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Chat created successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ChatDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "400", description = "Bad request")
+        @ApiResponse(
+                responseCode = "200",
+                description = "Chat created successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = ChatDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "400", description = "Bad request")
     })
     public ResponseEntity<ChatDTO> creatChatHandler(@RequestBody SingleChatRequest singleChatRequest,
                                                     @RequestHeader("Authorization")  String jwt) throws UserException {
@@ -83,18 +84,18 @@ public class ChatController {
     @PostMapping("/group")
     @Operation(summary = "Create a group chat", description = "Creates a group chat with the specified users.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Group chat created successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ChatDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "400", description = "Bad request")
+        @ApiResponse(
+                responseCode = "200",
+                description = "Group chat created successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = ChatDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "400", description = "Bad request")
     })
     public ResponseEntity<ChatDTO> createGroupHandler(@RequestBody GroupChatRequest groupChatRequest,
                                                       @RequestHeader("Authorization") String jwt)
@@ -108,17 +109,17 @@ public class ChatController {
     @GetMapping("/{chatId}")
     @Operation(summary = "Get chat by ID", description = "Fetches a chat by its unique ID.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Chat fetched successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ChatDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "Chat not found")
+        @ApiResponse(
+                responseCode = "200",
+                description = "Chat fetched successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = ChatDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "404", description = "Chat not found")
     })
     public ResponseEntity<ChatDTO> findChatByIdHandler(@PathVariable UUID chatId) throws ChatException {
         Chat chat = chatService.findChatById(chatId);
@@ -129,7 +130,7 @@ public class ChatController {
     @PutMapping("/{chatId}/add/{userId}")
     @Operation(summary = "Add user to group chat", description = "Adds a user to an existing group chat.")
     @ApiResponses({
-            @ApiResponse(
+        @ApiResponse(
                     responseCode = "200",
                     description = "User added to group successfully",
                     content = @Content(
@@ -138,9 +139,9 @@ public class ChatController {
                                     implementation = ChatDTO.class
                             )
                     )
-            ),
-            @ApiResponse(responseCode = "404", description = "Chat or user not found"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+                ),
+        @ApiResponse(responseCode = "404", description = "Chat or user not found"),
+        @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable UUID chatId,
                                                          @PathVariable UUID userId)
@@ -153,18 +154,18 @@ public class ChatController {
     @PutMapping("/{chatId}/rename")
     @Operation(summary = "Rename group chat", description = "Renames an existing group chat.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Group renamed successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ChatDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "Chat not found"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+        @ApiResponse(
+                responseCode = "200",
+                description = "Group renamed successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = ChatDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "404", description = "Chat not found"),
+        @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable UUID chatId,
                                                       @RequestBody RenameGroupChatRequest renameGroupRequest,
@@ -179,18 +180,18 @@ public class ChatController {
     @PutMapping("/{chatId}/remove/{userId}")
     @Operation(summary = "Remove user from group chat", description = "Removes a user from an existing group chat.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User removed successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ChatDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "Chat or user not found"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+        @ApiResponse(
+                responseCode = "200",
+                description = "User removed successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = ChatDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "404", description = "Chat or user not found"),
+        @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> removeFromGroupHandler(@RequestHeader("Authorization") String jwt,
                                                           @PathVariable UUID chatId,
@@ -205,18 +206,18 @@ public class ChatController {
     @DeleteMapping("/delete/{chatId}/{userId}")
     @Operation(summary = "Delete chat", description = "Deletes a chat based on its ID and the user's ID.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Chat deleted successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = ChatDTO.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "Chat not found"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized action")
+        @ApiResponse(
+                responseCode = "200",
+                description = "Chat deleted successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = ChatDTO.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "404", description = "Chat not found"),
+        @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable UUID chatId,
                                                      @PathVariable UUID userId) throws ChatException, UserException{
@@ -228,17 +229,17 @@ public class ChatController {
     @GetMapping("/summaries")
     @Operation(summary = "Get chat summaries", description = "Fetches summaries of chats for the authenticated user.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Chat summaries retrieved successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    implementation = List.class
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+        @ApiResponse(
+                responseCode = "200",
+                description = "Chat summaries retrieved successfully",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                implementation = List.class
+                        )
+                )
+                ),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     public ResponseEntity<List<ChatSummaryDTO>> getChatSummariesHandler(
             @RequestHeader("Authorization") String jwt,

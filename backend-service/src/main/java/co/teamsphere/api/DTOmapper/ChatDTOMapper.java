@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface ChatDTOMapper {
     @Mappings({
-            @Mapping(source = "chatName", target = "chatName"),
-            @Mapping(source = "chatImage", target = "chatImage"),
-            @Mapping(source = "isGroup", target = "isGroup"),
-            @Mapping(source = "admins", target = "admins", qualifiedByName = "usersToUserIds"),
-            @Mapping(source = "createdBy.id", target = "createdBy"),
-            @Mapping(source = "users", target = "users", qualifiedByName = "usersToUserIds"),
-            @Mapping(source = "messages", target = "messages", qualifiedByName = "messagesToMessageIds")
+        @Mapping(source = "chatName", target = "chatName"),
+        @Mapping(source = "chatImage", target = "chatImage"),
+        @Mapping(source = "isGroup", target = "isGroup"),
+        @Mapping(source = "admins", target = "admins", qualifiedByName = "usersToUserIds"),
+        @Mapping(source = "createdBy.id", target = "createdBy"),
+        @Mapping(source = "users", target = "users", qualifiedByName = "usersToUserIds"),
+        @Mapping(source = "messages", target = "messages", qualifiedByName = "messagesToMessageIds")
     })
     ChatDTO toChatDto(Chat chat);
 

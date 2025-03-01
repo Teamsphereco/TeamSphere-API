@@ -45,6 +45,24 @@ public class JWTTokenProvider {
                 .compact();
     }
 
+    public String generateJwtTokenFromEmail(String email) {
+        log.info("Generating JWT...");
+        var currentDate = new Date();
+
+        return Jwts.builder()
+                .setHeaderParam("typ", "JWT")
+                .setIssuer("Teamsphere.co")
+                .setSubject(email)
+                .setAudience(jwtProperties.getAudience())
+                .setIssuedAt(currentDate)
+                .setNotBefore(currentDate)
+                .setExpiration(new Date(currentDate.getTime()+86400000))
+                .claim("email", email)
+                .claim("authorities", "ROLE_USER")
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+
     public String getEmailFromToken(String token) {
         log.info("parsing claims ----------- ");
 

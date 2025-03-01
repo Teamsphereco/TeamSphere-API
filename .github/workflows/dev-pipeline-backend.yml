@@ -19,7 +19,7 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: corretto
 
       - name: Make mvnw executable
@@ -28,9 +28,23 @@ jobs:
       - name: Running Unit Tests
         run: ./mvnw clean compile install
 
+  checkstyle:
+    name: Run Linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '21'
+
+      - name: Run Checkstyle
+        run: mvn checkstyle:check
+
   build:
     name: Build & Push Docker Image
-    needs: test
+    needs: [test, checkstyle]
     runs-on: ubuntu-latest
     outputs:
       APP_VERSION: '${{steps.version-selector.outputs.version}}'

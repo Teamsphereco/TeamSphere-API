@@ -42,8 +42,9 @@ public class ChatController {
     private final ChatService chatService;
 
     private final UserService userService;
-    
+
     private final ChatDTOMapper chatDTOMapper;
+
 
     public ChatController(ChatService chatService,
                           UserService userService,
@@ -144,9 +145,11 @@ public class ChatController {
         @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable UUID chatId,
-                                                         @PathVariable UUID userId)
+                                                         @PathVariable UUID userId,
+                                                         @RequestHeader("Authorization") String jwt)
             throws UserException, ChatException {
-        Chat chat = chatService.addUserToGroup(userId, chatId);
+        User reqUser = userService.findUserProfile(jwt);
+        Chat chat = chatService.addUserToGroup(userId, chatId, reqUser);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
@@ -169,8 +172,7 @@ public class ChatController {
     })
     public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable UUID chatId,
                                                       @RequestBody RenameGroupChatRequest renameGroupRequest,
-                                                      @RequestHeader("Authorization") String jwt)
-            throws ChatException, UserException {
+                                                      @RequestHeader("Authorization") String jwt) throws ChatException, UserException {
         User reqUser = userService.findUserProfile(jwt);
         Chat chat = chatService.renameGroup(chatId, renameGroupRequest.getGroupName(), reqUser.getId());
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);

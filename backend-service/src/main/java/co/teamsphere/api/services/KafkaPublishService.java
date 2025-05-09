@@ -8,6 +8,6 @@ import java.util.concurrent.ExecutionException;
 @Service
 public interface KafkaPublishService {
 
-    SendResult<String, String> sendMessage(String msg) throws ExecutionException, InterruptedException;
+    SendResult<String, String> sendMessage(String msg);
 
 }

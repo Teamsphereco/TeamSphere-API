@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import co.teamsphere.api.services.KafkaPublishService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -47,6 +48,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final CustomUserDetailsService customUserDetails;
     private final CloudflareApiService cloudflareApiService;
     private final RefreshTokenService refreshTokenService;
+    private final KafkaPublishService kafkaPublishService;
 
     public AuthenticationServiceImpl(
             UserRepository userRepository,
@@ -54,7 +56,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             JWTTokenProvider jwtTokenProvider,
             CustomUserDetailsService customUserDetails,
             CloudflareApiService cloudflareApiService,
-            RefreshTokenService refreshTokenService
+            RefreshTokenService refreshTokenService,
+            KafkaPublishService kafkaPublishService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -62,6 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.customUserDetails = customUserDetails;
         this.cloudflareApiService = cloudflareApiService;
         this.refreshTokenService = refreshTokenService;
+        this.kafkaPublishService = kafkaPublishService;
     }
 
 
@@ -110,6 +114,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .build();
 
             userRepository.save(newUser);
+
+            kafkaPublishService.sendMessage("New user signed up " + request.getUsername());
 
             // auto-login after signup
             Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
@@ -165,6 +171,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("Generating refresh token for user with ID: {}", optionalUser.get().getId());
             RefreshToken refreshToken = createRefreshToken(optionalUser.get().getId().toString(), email);
 
+            kafkaPublishService.sendMessage("User logged in " + optionalUser.get().getUsername());
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.warn("Authentication failed for user with username: {}", email);

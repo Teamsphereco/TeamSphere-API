@@ -10,6 +10,7 @@ import co.teamsphere.api.request.SignupRequest;
 import co.teamsphere.api.response.AuthResponse;
 import co.teamsphere.api.response.CloudflareApiResponse;
 import co.teamsphere.api.services.CloudflareApiService;
+import co.teamsphere.api.services.KafkaPublishService;
 import co.teamsphere.api.services.RefreshTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,9 @@ public class AuthenticationServiceImplTest {
 
     @Mock
     private CloudflareApiService cloudflareApiService;
+
+    @Mock
+    private KafkaPublishService kafkaPublishService;
 
     @InjectMocks
     private AuthenticationServiceImpl authenticationService;

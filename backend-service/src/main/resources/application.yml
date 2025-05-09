@@ -31,6 +31,8 @@ spring:
     requested-heartbeat: 580
     username: ''
     virtual-host: ''
+  kafka:
+    bootstrap-servers: localhost:9092
 twilio:
   accountSid: ''
   authToken: ''

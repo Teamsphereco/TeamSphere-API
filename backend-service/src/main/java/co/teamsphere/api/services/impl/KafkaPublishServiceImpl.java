@@ -5,7 +5,6 @@ import co.teamsphere.api.services.KafkaPublishService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -18,8 +17,8 @@ public class KafkaPublishServiceImpl implements KafkaPublishService {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
-    public SendResult<String, String> sendMessage(String payload) {
-        return kafkaTemplate
+    public void sendMessage(String payload) {
+        kafkaTemplate
             .send(kafkaTopicConfig.topic().name(), payload)
             .thenApplyAsync(result -> {
                 log.info("{} with message=[{}]", result.getRecordMetadata(), payload);

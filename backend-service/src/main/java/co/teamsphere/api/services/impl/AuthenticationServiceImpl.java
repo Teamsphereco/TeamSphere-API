@@ -115,8 +115,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             userRepository.save(newUser);
 
-            kafkaPublishService.sendMessage("New user signed up " + request.getUsername());
-
             // auto-login after signup
             Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -125,6 +123,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             log.info("Generating refresh token for user with ID: {}", newUser.getId());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(newUser.getEmail());
+
+            kafkaPublishService.sendMessage("New user signed up " + request.getUsername());
 
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         }
@@ -172,6 +172,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             RefreshToken refreshToken = createRefreshToken(optionalUser.get().getId().toString(), email);
 
             kafkaPublishService.sendMessage("User logged in " + optionalUser.get().getUsername());
+
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.warn("Authentication failed for user with username: {}", email);
@@ -222,6 +223,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             String token = jwtTokenProvider.generateJwtTokenFromEmail(email);
             RefreshToken refreshToken = createRefreshToken(googleUser.getId().toString(), email);
+
+            kafkaPublishService.sendMessage("User logged in via Google " + googleUser.getUsername());
+
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.error("Error during Google authentication: ", e);

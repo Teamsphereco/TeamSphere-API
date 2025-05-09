@@ -2,19 +2,20 @@ package co.teamsphere.api.services.impl;
 
 import co.teamsphere.api.config.KafkaTopicConfig;
 import co.teamsphere.api.services.KafkaPublishService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@AllArgsConstructor
 public class KafkaPublishServiceImpl implements KafkaPublishService {
-
     private final KafkaTopicConfig kafkaTopicConfig;
-
     private final KafkaTemplate<String, String> kafkaTemplate;
+
+    public KafkaPublishServiceImpl(KafkaTopicConfig kafkaTopicConfig, KafkaTemplate<String, String> kafkaTemplate) {
+        this.kafkaTopicConfig = kafkaTopicConfig;
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     @Override
     public void sendMessage(String payload) {
@@ -30,5 +31,4 @@ public class KafkaPublishServiceImpl implements KafkaPublishService {
             })
             .join();
     }
-
 }

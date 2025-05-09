@@ -12,7 +12,6 @@ import java.util.HashMap;
 
 @Configuration
 public class KafkaTopicConfig {
-
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 

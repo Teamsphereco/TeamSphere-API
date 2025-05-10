@@ -86,15 +86,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
 
             if (request.getFile().isEmpty()
-                    || (!request.getFile().getContentType().equals("image/jpeg")
-                    && !request.getFile().getContentType().equals("image/png"))) {
+                    || (!Objects.equals(request.getFile().getContentType(), "image/jpeg")
+                    && !Objects.equals(request.getFile().getContentType(), "image/png"))) {
                 log.warn("File type not accepted, {}", request.getFile().getContentType());
                 throw new ProfileImageException("Profile Picture type is not allowed!");
             }
 
             // Upload profile picture to Cloudflare
             CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(request.getFile());
-            String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
+            String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().getFirst());
             String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
 
             var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
@@ -147,7 +147,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
 
             Optional<User> optionalUser = userRepository.findByEmail(email);
-            if (!optionalUser.isPresent()) {
+            if (optionalUser.isEmpty()) {
                 log.warn("User with email={} not found", email);
                 throw new BadCredentialsException("Invalid username or password.");
             }
@@ -186,7 +186,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String pictureUrl = googleUserInfo.getPicture();
 
             // Check if user exists
-            User googleUser = null;
+            User googleUser;
             Optional<User> optionalUser = userRepository.findByEmail(email);
             if (optionalUser.isPresent()) {
                 log.info("Existing user found with userId: {}", optionalUser.get().getId());
@@ -219,9 +219,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (BadCredentialsException e) {
             log.error("Error during Google authentication: ", e);
             throw new BadCredentialsException("Error during Google authentication");
-        } catch (UserException e) {
-            log.error("Error during Google authentication: ", e);
-            throw new UserException("Error during Google authentication");
         } catch (Exception e) {
             log.error("Error during Google authentication: ", e);
             throw new UserException("Error during Google authentication");

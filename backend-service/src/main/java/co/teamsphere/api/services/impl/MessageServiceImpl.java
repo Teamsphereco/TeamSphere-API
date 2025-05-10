@@ -40,7 +40,6 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public Messages sendMessage(SendMessageRequest req) throws UserException, ChatException {
-
         log.info("Attempting to send a message");
 
         try {
@@ -49,6 +48,11 @@ public class MessageServiceImpl implements MessageService {
 
             Chat chat = chatService.findChatById(req.getChatId());
             log.info("Found chat for sending message: {}", chat);
+
+            if (chat.getUsers().stream().noneMatch(u -> u.getId().equals(user.getId()))) {
+                log.error("User {} is not part of chat {}", user.getId(), chat.getId());
+                throw new UserException("User is not part of the chat");
+            }
 
             Messages messages = Messages.builder()
                 .chat(chat)
@@ -76,12 +80,12 @@ public class MessageServiceImpl implements MessageService {
         log.info("Attempting to delete message with ID: {}", messageId);
 
         try {
-            Messages messages = findMessageById(messageId);
+            Messages messages = messageRepo.findById(messageId).orElseThrow(() -> new MessageException("Message not found with ID: " + messageId));
             log.info("Found message for deletion: {}", messages);
 
             messageRepo.deleteById(messages.getId());
-            log.info("Message deleted successfully");
 
+            log.info("Message deleted successfully");
         } catch (MessageException e) {
             log.error("Error deleting message: {}", e.getMessage());
             throw e;
@@ -95,7 +99,6 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(readOnly = true)
     public List<Messages> getChatsMessages(UUID chatId) throws ChatException {
         log.info("Attempting to retrieve messages for chat with ID: {}", chatId);
-
         try {
             Chat chat = chatService.findChatById(chatId);
             log.info("Found chat for retrieving messages: {}", chat);

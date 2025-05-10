@@ -78,7 +78,7 @@ public class UserServiceImplTest {
         assertThatThrownBy(() -> userService.findUserById(userId))
                 .isInstanceOf(UserException.class)
                 .hasMessageContaining("user doesnt exist with the id: " + userId);
-        
+
         verify(userRepository, times(1)).findById(userId);
     }
 
@@ -87,7 +87,7 @@ public class UserServiceImplTest {
         // Arrange
         String jwt = "valid.jwt.token";
         String email = "test@example.com";
-        
+
         when(jwtTokenProvider.getEmailFromToken(jwt)).thenReturn(email);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
 
@@ -106,7 +106,7 @@ public class UserServiceImplTest {
         // Arrange
         String jwt = "valid.jwt.token";
         String email = "test@example.com";
-        
+
         when(jwtTokenProvider.getEmailFromToken(jwt)).thenReturn(email);
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
@@ -114,7 +114,7 @@ public class UserServiceImplTest {
         assertThatThrownBy(() -> userService.findUserProfile(jwt))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessageContaining("Received invalid token!");
-        
+
         verify(jwtTokenProvider, times(1)).getEmailFromToken(jwt);
         verify(userRepository, times(1)).findByEmail(email);
     }
@@ -124,7 +124,7 @@ public class UserServiceImplTest {
         // Arrange
         String query = "test";
         List<User> expectedUsers = List.of(testUser);
-        
+
         when(userRepository.searchUsers(query)).thenReturn(expectedUsers);
 
         // Act
@@ -141,7 +141,7 @@ public class UserServiceImplTest {
     void searchUser_WhenNoUsersFound_ReturnsEmptyList() {
         // Arrange
         String query = "nonexistent";
-        
+
         when(userRepository.searchUsers(query)).thenReturn(Collections.emptyList());
 
         // Act
@@ -155,63 +155,60 @@ public class UserServiceImplTest {
 
     @Test
     void updateUser_WithUsernameOnly_UpdatesUsername() throws Exception {
-        // Arrange
         UpdateUserRequest request = new UpdateUserRequest();
         request.setUsername("newUsername");
-        
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername("newUsername")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        User updatedUser = userService.updateUser(userId, request);
+        User updatedUser = userService.updateUser(userId, request, testUser.getEmail());
 
-        // Assert
         assertThat(updatedUser).isNotNull();
         assertThat(updatedUser.getUsername()).isEqualTo("newUsername");
         assertThat(updatedUser.getProfilePicture()).isEqualTo(testUser.getProfilePicture());
-        
+
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
         assertThat(savedUser.getUsername()).isEqualTo("newUsername");
         assertThat(savedUser.getLastUpdatedDate()).isNotNull();
     }
-
     @Test
     void updateUser_WithProfilePicture_UpdatesProfilePicture() throws Exception {
         // Arrange
         UpdateUserRequest request = new UpdateUserRequest();
         request.setUsername("testUser");
         MockMultipartFile profilePicture = new MockMultipartFile(
-                "profile_picture", 
+                "profile_picture",
                 "test.jpg",
-                "image/jpeg", 
+                "image/jpeg",
                 "test image content".getBytes()
         );
         request.setProfile_picture(profilePicture);
-        
+
         CloudflareApiResponse deleteResponse = new CloudflareApiResponse();
         deleteResponse.setSuccess(true);
-        
+
         CloudflareApiResponse.Result uploadResult = new CloudflareApiResponse.Result();
         uploadResult.setVariants(List.of("https://example.com/profiles/xyz789/variant"));
-        
+
         CloudflareApiResponse uploadResponse = new CloudflareApiResponse();
         uploadResponse.setSuccess(true);
         uploadResponse.setResult(uploadResult);
-        
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
         when(cloudflareApiService.deleteImage("abc123")).thenReturn(deleteResponse);
         when(cloudflareApiService.uploadImage(profilePicture)).thenReturn(uploadResponse);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        User updatedUser = userService.updateUser(userId, request);
+        User updatedUser = userService.updateUser(userId, request, testUser.getEmail());
 
         // Assert
         assertThat(updatedUser).isNotNull();
         assertThat(updatedUser.getProfilePicture()).isEqualTo("https://example.com/profiles/xyz789/public");
-        
+
         verify(cloudflareApiService).deleteImage("abc123");
         verify(cloudflareApiService).uploadImage(profilePicture);
         verify(userRepository).save(any(User.class));
@@ -222,14 +219,14 @@ public class UserServiceImplTest {
         // Arrange
         UpdateUserRequest request = new UpdateUserRequest();
         request.setUsername("newUsername");
-        
+
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> userService.updateUser(userId, request))
+        assertThatThrownBy(() -> userService.updateUser(userId, request, testUser.getEmail()))
                 .isInstanceOf(UserException.class)
                 .hasMessageContaining("Error updating user: user doesnt exist with the id");
-        
+
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -267,7 +264,7 @@ public class UserServiceImplTest {
         when(cloudflareApiService.uploadImage(any(MultipartFile.class))).thenReturn(mockUploadResponse);
 
         // Assert that UserException is thrown
-        assertThrows(UserException.class, () -> userService.updateUser(testUser.getId(), request));
+        assertThrows(UserException.class, () -> userService.updateUser(testUser.getId(), request, testUser.getEmail()));
 
         // Verify interactions (optional but recommended)
         verify(cloudflareApiService).uploadImage(any(MultipartFile.class));

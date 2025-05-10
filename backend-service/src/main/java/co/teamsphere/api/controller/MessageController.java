@@ -44,6 +44,7 @@ public class MessageController {
         this.messageDTOMapper = messageDTOMapper;
     }
 
+    @PostMapping("/create")
     @Operation(summary = "Send a message", description = "Sends a message to a user or group chat.")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
         @ApiResponse(
@@ -60,9 +61,7 @@ public class MessageController {
         @ApiResponse(responseCode = "400", description = "Bad request"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/create")
     public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException {
-
         try {
             log.info("Processing send message request to userId: {}", req.getUserId());
 

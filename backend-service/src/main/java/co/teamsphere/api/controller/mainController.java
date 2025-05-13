@@ -10,6 +10,6 @@ public class mainController {
 
     @GetMapping("/")
     public String home() {
-        return "Welcome to YipYapTimeAPI!";
+        return "Welcome to TeamSphere API!";
     }
 }

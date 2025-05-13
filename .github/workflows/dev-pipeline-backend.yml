@@ -2,9 +2,7 @@ name: TeamSphere Dev Backend Pipeline
 on:
   push:
     branches:
-      - '**'
-    tags-ignore:
-      - '**'
+      - master
 
 jobs:
   test:
@@ -113,7 +111,7 @@ jobs:
           script: |
             export IMAGE_DEV_VERSION=${{ needs.build.outputs.APP_VERSION }}
             echo "Image version: $IMAGE_DEV_VERSION"
-            
+
             # Get Vault credentials
             export VAULT_DEV_SECRET_ID=$(curl --silent \
               --request POST \
@@ -129,6 +127,7 @@ jobs:
 
             # Deploy application
             cd /home/teamsphere/projects/teamsphere-deployment
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin            
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             docker pull bravinr/teamsphere:$IMAGE_DEV_VERSION
             docker compose up -d --force-recreate spring-app-dev
+            docker compose up -d --force-recreate nginx

@@ -134,8 +134,10 @@ public class AuthenticationServiceImplTest {
         when(userRepository.findByUsername(validSignupRequest.getUsername())).thenReturn(Optional.empty());
         when(cloudflareApiService.uploadImage(validSignupRequest.getFile())).thenReturn(cloudflareResponse);
         when(passwordEncoder.encode(validSignupRequest.getPassword())).thenReturn("encodedPassword");
-        when(jwtTokenProvider.generateJwtToken(any(Authentication.class))).thenReturn("jwt.token.here");
 
+        // TODO: I cant wrap my head around why this works? but it does
+        when(jwtTokenProvider.generateJwtToken(any(Authentication.class), any()))
+            .thenReturn("jwt.token.here");
         var refreshToken = RefreshToken.builder()
                 .id(UUID.randomUUID())
                 .user(testUser)
@@ -228,7 +230,7 @@ public class AuthenticationServiceImplTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
         when(customUserDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
         when(passwordEncoder.matches(password, userDetails.getPassword())).thenReturn(true);
-        when(jwtTokenProvider.generateJwtToken(any(Authentication.class))).thenReturn("jwt.token.here");
+        when(jwtTokenProvider.generateJwtToken(any(Authentication.class), any(UUID.class))).thenReturn("jwt.token.here");
 
         var refreshToken = RefreshToken.builder()
             .id(UUID.randomUUID())
@@ -256,7 +258,7 @@ public class AuthenticationServiceImplTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
         when(customUserDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
         when(passwordEncoder.matches(password, userDetails.getPassword())).thenReturn(true);
-        when(jwtTokenProvider.generateJwtToken(any(Authentication.class))).thenReturn("jwt.token.here");
+        when(jwtTokenProvider.generateJwtToken(any(Authentication.class), any(UUID.class))).thenReturn("jwt.token.here");
 
         var existingRefreshToken = RefreshToken.builder()
             .id(UUID.randomUUID())

@@ -115,7 +115,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            String token = jwtTokenProvider.generateJwtToken(authentication);
+            String token = jwtTokenProvider.generateJwtToken(authentication, newUser.getId());
 
             log.info("Generating refresh token for user with ID: {}", newUser.getId());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(newUser.getEmail());
@@ -160,7 +160,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new BadCredentialsException("Invalid username or password.");
             }
 
-            String token = jwtTokenProvider.generateJwtToken(authentication);
+            String token = jwtTokenProvider.generateJwtToken(authentication, optionalUser.get().getId());
 
             log.info("Generating refresh token for user with ID: {}", optionalUser.get().getId());
             RefreshToken refreshToken = createRefreshToken(optionalUser.get().getId().toString(), email);
@@ -213,7 +213,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
 
-            String token = jwtTokenProvider.generateJwtTokenFromEmail(email);
+            String token = jwtTokenProvider.generateJwtTokenFromEmail(email, googleUser.getId());
             RefreshToken refreshToken = createRefreshToken(googleUser.getId().toString(), email);
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {

@@ -16,7 +16,7 @@ public interface UserService{
 
     User findUserProfile(String jwt);
 
-    User updateUser(UUID userId, UpdateUserRequest req, String email) throws UserException, ProfileImageException;
+    User updateUser(UUID userId, UpdateUserRequest req, UUID reqUser) throws UserException, ProfileImageException;
 
     User findUserById(UUID userId) throws UserException;
 

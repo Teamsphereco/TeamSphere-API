@@ -69,9 +69,9 @@ public class UserController {
         try {
             log.info("Processing update user request for user with ID: {}", userId);
 
-            String email = jwtTokenProvider.getEmailFromToken(jwt);
+            UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
 
-            User updatedUser = userService.updateUser(userId, req, email);
+            User updatedUser = userService.updateUser(userId, req, reqUserId);
             UserDTO userDTO = userDTOMapper.toUserDTO(updatedUser);
 
             log.info("User with ID {} updated successfully", userId);

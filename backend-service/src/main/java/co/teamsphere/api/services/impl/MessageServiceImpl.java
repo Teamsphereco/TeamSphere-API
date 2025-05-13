@@ -97,11 +97,16 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Messages> getChatsMessages(UUID chatId) throws ChatException {
+    public List<Messages> getChatsMessages(UUID chatId, UUID reqUserId) throws ChatException {
         log.info("Attempting to retrieve messages for chat with ID: {}", chatId);
         try {
             Chat chat = chatService.findChatById(chatId);
             log.info("Found chat for retrieving messages: {}", chat);
+
+            if (chat.getUsers().stream().noneMatch(u -> u.getId().equals(reqUserId))) {
+                log.error("User {} is not part of chat {}", reqUserId, chatId);
+                throw new ChatException("User is not part of the chat");
+            }
 
             List<Messages> messages = messageRepo.findMessageByChatId(chatId);
             log.info("Retrieved {} messages for chat with ID: {}", messages.size(), chatId);

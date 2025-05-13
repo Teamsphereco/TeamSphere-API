@@ -86,37 +86,39 @@ public class UserServiceImplTest {
     void findUserProfile_WhenUserExists_ReturnsUser() {
         // Arrange
         String jwt = "valid.jwt.token";
-        String email = "test@example.com";
+        var userId = testUser.getId();
 
-        when(jwtTokenProvider.getEmailFromToken(jwt)).thenReturn(email);
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
+        when(jwtTokenProvider.getIdFromToken(jwt)).thenReturn(userId);
+
+        when(jwtTokenProvider.getIdFromToken(jwt)).thenReturn(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
         User foundUser = userService.findUserProfile(jwt);
 
         // Assert
         assertThat(foundUser).isNotNull();
-        assertThat(foundUser.getEmail()).isEqualTo(email);
-        verify(jwtTokenProvider, times(1)).getEmailFromToken(jwt);
-        verify(userRepository, times(1)).findByEmail(email);
+        assertThat(foundUser.getId()).isEqualTo(userId);
+        verify(jwtTokenProvider, times(1)).getIdFromToken(jwt);
+        verify(userRepository, times(1)).findById(userId);
     }
 
     @Test
     void findUserProfile_WhenUserDoesNotExist_ThrowsBadCredentialsException() {
         // Arrange
         String jwt = "valid.jwt.token";
-        String email = "test@example.com";
+        UUID userId = UUID.randomUUID();
 
-        when(jwtTokenProvider.getEmailFromToken(jwt)).thenReturn(email);
-        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(jwtTokenProvider.getIdFromToken(jwt)).thenReturn(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThatThrownBy(() -> userService.findUserProfile(jwt))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessageContaining("Received invalid token!");
 
-        verify(jwtTokenProvider, times(1)).getEmailFromToken(jwt);
-        verify(userRepository, times(1)).findByEmail(email);
+        verify(jwtTokenProvider, times(1)).getIdFromToken(jwt);
+        verify(userRepository, times(1)).findById(userId);
     }
 
     @Test
@@ -162,7 +164,7 @@ public class UserServiceImplTest {
         when(userRepository.findByUsername("newUsername")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User updatedUser = userService.updateUser(userId, request, testUser.getEmail());
+        User updatedUser = userService.updateUser(userId, request, testUser.getId());
 
         assertThat(updatedUser).isNotNull();
         assertThat(updatedUser.getUsername()).isEqualTo("newUsername");
@@ -203,7 +205,7 @@ public class UserServiceImplTest {
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        User updatedUser = userService.updateUser(userId, request, testUser.getEmail());
+        User updatedUser = userService.updateUser(userId, request, testUser.getId());
 
         // Assert
         assertThat(updatedUser).isNotNull();
@@ -223,7 +225,7 @@ public class UserServiceImplTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> userService.updateUser(userId, request, testUser.getEmail()))
+        assertThatThrownBy(() -> userService.updateUser(userId, request, testUser.getId()))
                 .isInstanceOf(UserException.class)
                 .hasMessageContaining("Error updating user: user doesnt exist with the id");
 
@@ -264,7 +266,7 @@ public class UserServiceImplTest {
         when(cloudflareApiService.uploadImage(any(MultipartFile.class))).thenReturn(mockUploadResponse);
 
         // Assert that UserException is thrown
-        assertThrows(UserException.class, () -> userService.updateUser(testUser.getId(), request, testUser.getEmail()));
+        assertThrows(UserException.class, () -> userService.updateUser(testUser.getId(), request, testUser.getId()));
 
         // Verify interactions (optional but recommended)
         verify(cloudflareApiService).uploadImage(any(MultipartFile.class));

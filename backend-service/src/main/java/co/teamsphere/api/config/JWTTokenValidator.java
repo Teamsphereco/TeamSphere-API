@@ -59,7 +59,7 @@ public class JWTTokenValidator extends OncePerRequestFilter {
                     throw new JwtException("Invalid audience: " + audience);
                 }
 
-                String username = claim.getSubject();
+                String username = claim.get("email", String.class);
                 String authorities = claim.get("authorities", String.class);
 
                 List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);

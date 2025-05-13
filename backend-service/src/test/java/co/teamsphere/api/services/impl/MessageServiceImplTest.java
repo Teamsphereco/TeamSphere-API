@@ -111,9 +111,27 @@ class MessageServiceImplTest {
 
     @Test
     void getChatsMessagesReturnsMessagesListWhenChatExists() throws ChatException {
+        // Arrange
+        UUID chatId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        User user = new User();
+        user.setId(userId);
+
+        Chat chat = new Chat();
+        chat.setId(chatId);
+        chat.setUsers(Set.of(user));
+
+        Messages message = new Messages();
+        message.setContent("Hello World");
+
         when(chatService.findChatById(chatId)).thenReturn(chat);
         when(messageRepo.findMessageByChatId(chatId)).thenReturn(List.of(message));
-        List<Messages> messagesList = messageService.getChatsMessages(chatId);
+
+        // Act
+        List<Messages> messagesList = messageService.getChatsMessages(chatId, userId);
+
+        // Assert
         assertNotNull(messagesList);
         assertFalse(messagesList.isEmpty());
         assertEquals(1, messagesList.size());
@@ -124,7 +142,7 @@ class MessageServiceImplTest {
     @Test
     void getChatsMessagesThrowsExceptionWhenChatNotFound() throws ChatException {
         when(chatService.findChatById(chatId)).thenThrow(new ChatException("Chat not found"));
-        assertThrows(ChatException.class, () -> messageService.getChatsMessages(chatId));
+        assertThrows(ChatException.class, () -> messageService.getChatsMessages(chatId, user.getId()));
         verify(messageRepo, never()).findMessageByChatId(any());
     }
     @Test

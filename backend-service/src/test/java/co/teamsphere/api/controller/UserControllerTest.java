@@ -74,9 +74,9 @@ public class UserControllerTest {
         request.setUsername("newUsername");
         var token = "jwt.valid.token";
 
-        when(jwtTokenProvider.getEmailFromToken(token)).thenReturn(testUser.getEmail());
+        when(jwtTokenProvider.getIdFromToken(token)).thenReturn(testUser.getId());
 
-        when(userService.updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getEmail()))).thenReturn(testUser);
+        when(userService.updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getId()))).thenReturn(testUser);
 
         when(userDTOMapper.toUserDTO(testUser)).thenReturn(testUserDTO);
 
@@ -88,8 +88,8 @@ public class UserControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(testUserDTO);
 
-        verify(jwtTokenProvider).getEmailFromToken(token);
-        verify(userService).updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getEmail()));
+        verify(jwtTokenProvider).getIdFromToken(token);
+        verify(userService).updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getId()));
         verify(userDTOMapper).toUserDTO(testUser);
     }
 
@@ -101,9 +101,9 @@ public class UserControllerTest {
         request.setUsername("newUsername");
         String token = "jwt.valid.token";
 
-        when(jwtTokenProvider.getEmailFromToken(token)).thenReturn(testUser.getEmail());
+        when(jwtTokenProvider.getIdFromToken(token)).thenReturn(testUser.getId());
 
-        when(userService.updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getEmail())))
+        when(userService.updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getId())))
             .thenThrow(new RuntimeException("Database error"));
 
         // Act & Assert
@@ -111,8 +111,8 @@ public class UserControllerTest {
             .isInstanceOf(UserException.class)
             .hasMessageContaining("Error during update user process");
 
-        verify(jwtTokenProvider).getEmailFromToken(token);
-        verify(userService).updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getEmail()));
+        verify(jwtTokenProvider).getIdFromToken(token);
+        verify(userService).updateUser(eq(userId), any(UpdateUserRequest.class), eq(testUser.getId()));
         verify(userDTOMapper, never()).toUserDTO(any(User.class));
     }
 

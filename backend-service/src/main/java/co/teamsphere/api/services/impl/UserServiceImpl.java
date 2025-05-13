@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateUser(UUID userId, UpdateUserRequest req, String email) throws UserException, ProfileImageException {
+    public User updateUser(UUID userId, UpdateUserRequest req, UUID reqUserId) throws UserException, ProfileImageException {
         try {
             log.info("Attempting to update user with ID: {}", userId);
             User user = findUserById(userId);
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
             }
 
             // check if email is the same as the one in the JWT token
-            if (!user.getEmail().equals(email)) {
+            if (!user.getId().equals(reqUserId)) {
                 log.error("SECURITY ERROR: User with ID: {} has tried to edit someone else's account!", userId);
                 throw new UserException("User not found");
             }
@@ -134,12 +134,12 @@ public class UserServiceImpl implements UserService {
     public User findUserProfile(String jwt) {
         log.info("Attempting to find user profile using JWT");
 
-        String email = jwtTokenProvider.getEmailFromToken(jwt);
+        UUID userId = jwtTokenProvider.getIdFromToken(jwt);
 
-        Optional<User> opt = userRepo.findByEmail(email);
+        Optional<User> opt = userRepo.findById(userId);
 
         if (opt.isEmpty()) {
-            log.error("User profile not found for email: {}", email);
+            log.error("User profile not found for userId: {}", userId);
             throw new BadCredentialsException("Received invalid token!");
         }
 

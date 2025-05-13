@@ -31,6 +31,7 @@ import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -94,14 +95,14 @@ public class JWTTokenValidatorTest {
 
     @Test
     void generateJwtToken_shouldCreateValidToken() {
-        String token = jwtTokenProvider.generateJwtToken(authentication);
+        String token = jwtTokenProvider.generateJwtToken(authentication, UUID.randomUUID());
         assertNotNull(token);
         assertFalse(token.isEmpty());
     }
 
     @Test
     public void testValidToken() throws IOException, ServletException {
-        String token = jwtTokenProvider.generateJwtToken(authentication);
+        String token = jwtTokenProvider.generateJwtToken(authentication, UUID.randomUUID());
 
         when(request.getHeader(JWTTokenConst.HEADER)).thenReturn("Bearer "+token);
 
@@ -118,7 +119,7 @@ public class JWTTokenValidatorTest {
 
     @Test
     void generatedToken_shouldHaveCorrectExpiration() {
-        String token = jwtTokenProvider.generateJwtToken(authentication);
+        String token = jwtTokenProvider.generateJwtToken(authentication, UUID.randomUUID());
 
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(privateKey)
@@ -135,7 +136,7 @@ public class JWTTokenValidatorTest {
 
     @Test
     void getEmailFromToken_shouldExtractCorrectEmail() {
-        String token = "Bearer " + jwtTokenProvider.generateJwtToken(authentication);
+        String token = "Bearer " + jwtTokenProvider.generateJwtToken(authentication, UUID.randomUUID());
 
         String extractedEmail = jwtTokenProvider.getEmailFromToken(token);
         assertEquals("test@example.com", extractedEmail);
@@ -163,7 +164,7 @@ public class JWTTokenValidatorTest {
 
     @Test
     void getEmailFromToken_shouldThrowExceptionForTamperedToken() {
-        String originalToken = jwtTokenProvider.generateJwtToken(authentication);
+        String originalToken = jwtTokenProvider.generateJwtToken(authentication, UUID.randomUUID());
         String tamperedToken = originalToken + "extra";
 
         assertThrows(JwtException.class, () -> {

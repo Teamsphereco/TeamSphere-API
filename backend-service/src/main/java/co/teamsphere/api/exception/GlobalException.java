@@ -11,6 +11,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @RestControllerAdvice
 public class GlobalException {
@@ -47,11 +48,43 @@ public class GlobalException {
         return new ResponseEntity<>(err, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ChatException.class)
+    public  ResponseEntity<ErrorDetail> ChatExceptionHandler(ChatException chatException, WebRequest req) {
+        // Grabbing the original message from the exception and preparing a message to return to user
+        String originalMessage = chatException.getMessage();
+        String messageToReturn = "";
+
+        if (originalMessage == null) {
+            messageToReturn = "A chat error has occurred, but no details were provided.";
+        } else if (Pattern.compile("(?i).*chat not exist.*").matcher(originalMessage).find()) {
+            messageToReturn = "The chat you are looking for does not exist.";
+        } else if (Pattern.compile("(?i).*finding chat by ID.*").matcher(originalMessage).find()) {
+            messageToReturn = "Unable to locate the specified chat.";
+        } else if (Pattern.compile("(?i).*permission.*").matcher(originalMessage).find()) {
+            messageToReturn = "You don't have permission to perform this chat action.";
+        } else if (Pattern.compile("(?i).*send message.*").matcher(originalMessage).find()) {
+            messageToReturn = "An error occurred while sending the message.";
+        } else if (Pattern.compile("(?i).*get messages.*").matcher(originalMessage).find()) {
+            messageToReturn = "An error occurred while retrieving chat messages.";
+        } else if (Pattern.compile("(?i).*deleting chat.*").matcher(originalMessage).find()) {
+            messageToReturn = "An error occurred while deleting the chat.";
+        } else if (Pattern.compile("(?i).*retrieving messages.*").matcher(originalMessage).find()) {
+            messageToReturn = "Failed to retrieve messages from the chat.";
+        } else {
+            messageToReturn = "Unexpected chat error has occurred";
+        }
+
+        ErrorDetail error = new ErrorDetail(messageToReturn, req.getDescription(false), LocalDateTime.now().atOffset(ZoneOffset.UTC));
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ErrorDetail> handleNoHandlerFoundException(NoHandlerFoundException noHandlerFoundException) {
         ErrorDetail error = new ErrorDetail("Endpoint not found", noHandlerFoundException.getMessage(), LocalDateTime.now().atOffset(ZoneOffset.UTC));
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetail> otherErrorHandler(Exception e, WebRequest req){

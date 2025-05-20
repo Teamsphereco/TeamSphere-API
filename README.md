@@ -1,5 +1,5 @@
 # Teamsphere Backend
-Welcome to the backend of Teamsphere, a chat application built with Spring Boot. This application provides the core functionality for one-on-one chats, user authentication, and profile image storage. Future updates will include group chat functionality using web sockets with the STOMP protocol.
+Welcome to the backend of Teamsphere, a chat application built with Spring Boot. This application provides the core functionality for one-on-one chats, user authentication, and profile image storage. Future updates will include group chat functionality using web sockets.
 
 ## Table of Contents
 

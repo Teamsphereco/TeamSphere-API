@@ -21,17 +21,3 @@ spring:
     show-sql: true
   profiles:
     active: local
-  rabbitmq:
-    cache:
-      channel:
-        size: 10
-    host: ''
-    password: ''
-    port: 15672
-    requested-heartbeat: 580
-    username: ''
-    virtual-host: ''
-twilio:
-  accountSid: ''
-  authToken: ''
-  phoneNumber: ''

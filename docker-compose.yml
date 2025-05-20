@@ -7,13 +7,3 @@ services:
       MYSQL_DATABASE: teamsphere_db
     ports:
       - "3306:3306"
-  rabbitmq:
-    image: rabbitmq:management
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    command: >
-      bash -c "rabbitmq-plugins enable rabbitmq_stomp && rabbitmq-server"
-    ports:
-      - "61613:61613"
-      - "15672:15672"

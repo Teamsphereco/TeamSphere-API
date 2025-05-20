@@ -1,5 +1,5 @@
 # Teamsphere Backend
-Welcome to the backend of Teamsphere, a chat application built with Spring Boot. This application provides the core functionality for one-on-one chats, user authentication, and profile image storage. Future updates will include group chat functionality using web sockets with the STOMP protocol and RabbitMQ.
+Welcome to the backend of Teamsphere, a chat application built with Spring Boot. This application provides the core functionality for one-on-one chats, user authentication, and profile image storage. Future updates will include group chat functionality using web sockets.
 
 ## Table of Contents
 
@@ -97,12 +97,6 @@ openssl pkcs8 -in keypair.pem -topk8 -nocrypt -inform PEM -outform PEM -out priv
         hibernate:
           ddl-auto: update
         show-sql: true
-      rabbitmq:
-        host: localhost
-        password: guest
-        port: 61613
-        requested-heartbeat: 580
-        username: guest
       servlet:
         multipart:
           max-file-size: 20MB
@@ -121,16 +115,6 @@ openssl pkcs8 -in keypair.pem -topk8 -nocrypt -inform PEM -outform PEM -out priv
           MYSQL_DATABASE: teamsphere_db
         ports:
           - "3306:3306"
-      rabbitmq:
-        image: rabbitmq:management
-        environment:
-          RABBITMQ_DEFAULT_USER: guest
-          RABBITMQ_DEFAULT_PASS: guest
-        command: >
-          bash -c "rabbitmq-plugins enable rabbitmq_stomp && rabbitmq-server"
-        ports:
-          - "61613:61613"
-          - "15672:15672"
 ```
 
 ## M-Chip MAC users

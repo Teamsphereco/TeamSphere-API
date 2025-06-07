@@ -4,6 +4,7 @@ import co.teamsphere.api.DTO.ChatSummaryDTO;
 import co.teamsphere.api.exception.ChatException;
 import co.teamsphere.api.exception.UserException;
 import co.teamsphere.api.models.Chat;
+import co.teamsphere.api.models.User;
 import co.teamsphere.api.request.GroupChatRequest;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public interface ChatService{
 
     Chat createGroup(GroupChatRequest req, UUID reqUerId) throws UserException;
 
-    Chat addUserToGroup(UUID userId, UUID chatId) throws UserException, ChatException;
+    Chat addUserToGroup(UUID userId, UUID chatId, User reqUserId) throws UserException, ChatException;
 
     Chat renameGroup(UUID chatId, String groupName, UUID reqUserId) throws ChatException, UserException;
 

@@ -224,7 +224,7 @@ public class AuthControllerTest {
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        when(jwtTokenProvider.generateJwtToken(any(Authentication.class))).thenReturn("jwt.token.here");
+        when(jwtTokenProvider.generateJwtToken(any(Authentication.class), any(UUID.class))).thenReturn("jwt.token.here");
 
         var mockRefreshToken = RefreshToken.builder()
                 .id(UUID.randomUUID())
@@ -245,7 +245,7 @@ public class AuthControllerTest {
 
         verify(userRepository).findByEmail("test@example.com");
         verify(userRepository).save(any(User.class));
-        verify(jwtTokenProvider).generateJwtToken(any(Authentication.class));
+        verify(jwtTokenProvider).generateJwtToken(any(Authentication.class), any(UUID.class));
         verify(refreshTokenService).createRefreshToken("test@example.com");
     }
 
@@ -260,7 +260,7 @@ public class AuthControllerTest {
                 .build();
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
-        when(jwtTokenProvider.generateJwtToken(any(Authentication.class))).thenReturn("jwt.token.here");
+        when(jwtTokenProvider.generateJwtToken(any(Authentication.class), any(UUID.class))).thenReturn("jwt.token.here");
 
         var existingRefreshToken = RefreshToken.builder()
                 .id(UUID.randomUUID())
@@ -282,7 +282,7 @@ public class AuthControllerTest {
 
         verify(userRepository).findByEmail("test@example.com");
         verify(userRepository, never()).save(any(User.class));
-        verify(jwtTokenProvider).generateJwtToken(any(Authentication.class));
+        verify(jwtTokenProvider).generateJwtToken(any(Authentication.class), any(UUID.class));
         verify(refreshTokenService).findByUserId(existingUser.getId().toString());
         verify(refreshTokenService, never()).createRefreshToken(anyString());
     }
@@ -303,7 +303,7 @@ public class AuthControllerTest {
 
         // Verify repository was called but not the token services
         verify(userRepository).findByEmail("test@example.com");
-        verify(jwtTokenProvider, never()).generateJwtToken(any(Authentication.class));
+        verify(jwtTokenProvider, never()).generateJwtToken(any(Authentication.class), any(UUID.class));
         verify(refreshTokenService, never()).createRefreshToken(anyString());
     }
 }

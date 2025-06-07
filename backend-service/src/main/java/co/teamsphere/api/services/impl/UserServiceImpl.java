@@ -40,32 +40,41 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateUser(UUID userId, UpdateUserRequest req) throws UserException, ProfileImageException {
+    public User updateUser(UUID userId, UpdateUserRequest req, UUID reqUserId) throws UserException, ProfileImageException {
         try {
             log.info("Attempting to update user with ID: {}", userId);
             User user = findUserById(userId);
-    
+
             if (user == null) {
-                log.error("User with ID= {}, not found. Unable to update.", userId);
+                log.error("User with ID: {}, not found. Unable to update.", userId);
                 throw new UserException("User not found");
             }
-    
-            log.info("Found user for update: {}", user);
-    
-            if (req.getUsername() != null || !req.getUsername().isEmpty() || !req.getUsername().isBlank()) {
+
+            // check if email is the same as the one in the JWT token
+            if (!user.getId().equals(reqUserId)) {
+                log.error("SECURITY ERROR: User with ID: {} has tried to edit someone else's account!", userId);
+                throw new UserException("User not found");
+            }
+
+            log.info("Found user for update: {}", user.getId());
+
+            User existingName = userRepo.findByUsername(req.getUsername()).orElse(null);
+
+            if (req.getUsername() != null && !req.getUsername().isEmpty() && !req.getUsername().isBlank() && (existingName == null || !user.getUsername().equals(req.getUsername()))) {
                 log.info("Updating username to: {}", req.getUsername());
                 user.setUsername(req.getUsername());
             }
 
             if (req.getProfile_picture() != null) {
                 log.info("Checking if profile picture is valid");
-                if (req.getProfile_picture().isEmpty() || (!req.getProfile_picture().getContentType().equals("image/jpeg") && !req.getProfile_picture().getContentType().equals("image/png"))) {
+                if (req.getProfile_picture().isEmpty() || (!Objects.equals(req.getProfile_picture().getContentType(), "image/jpeg") && !req.getProfile_picture().getContentType().equals("image/png"))) {
                     log.warn("File type not accepted, {}", req.getProfile_picture().getContentType());
                     throw new ProfileImageException("Profile Picture type is not allowed!");
                 }
 
                 log.info("Updating profile picture: {}", user.getProfilePicture());
                 var profileImg = user.getProfilePicture().split("/");
+
                 CloudflareApiResponse responseEntity = cloudflareApiService.deleteImage(profileImg[profileImg.length - 2]);
                 if (!responseEntity.isSuccess()) {
                     log.warn("Error deleting profile picture from Cloudflare, ID: {}", profileImg[profileImg.length - 2]);
@@ -78,17 +87,17 @@ public class UserServiceImpl implements UserService {
                     throw new ProfileImageException("Error uploading new profile picture to Cloudflare");
                 }
 
-                String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
+                String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().getFirst());
                 String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
                 user.setProfilePicture(profileUrl);
             }
-    
+
             user.setLastUpdatedDate(LocalDateTime.now().atOffset(ZoneOffset.UTC));
-    
+
             // Save the updated user
             User updatedUser = userRepo.save(user);
             log.info("User updated successfully. Updated user details: {}", updatedUser);
-    
+
             return updatedUser;
         } catch (ProfileImageException e) {
             log.error("Error updating user profile image: {}", e.getMessage());
@@ -109,13 +118,15 @@ public class UserServiceImpl implements UserService {
 
         Optional<User> opt = userRepo.findById(userId);
 
-        if (opt.isPresent()) {
-            User user = opt.get();
-            log.info("Found user with ID {}: {}", userId, user);
-
-            return user;
+        if (opt.isEmpty()) {
+            log.error("ERROR: User not found with ID: {}", userId);
+            throw new UserException("user doesnt exist with the id: " + userId);
         }
-        throw new UserException("user doesnt exist with the id: " + userId);
+
+        User user = opt.get();
+        log.info("Found user with ID {}: {}", userId, user);
+
+        return user;
     }
 
     @Override
@@ -123,18 +134,17 @@ public class UserServiceImpl implements UserService {
     public User findUserProfile(String jwt) {
         log.info("Attempting to find user profile using JWT");
 
-        String email = jwtTokenProvider.getEmailFromToken(jwt);
+        UUID userId = jwtTokenProvider.getIdFromToken(jwt);
 
-        Optional<User> opt = userRepo.findByEmail(email);
+        Optional<User> opt = userRepo.findById(userId);
 
-        if (opt.isPresent()) {
-            log.info("Found user profile for userId: {}", opt.get().getId());
-            return opt.get();
+        if (opt.isEmpty()) {
+            log.error("User profile not found for userId: {}", userId);
+            throw new BadCredentialsException("Received invalid token!");
         }
 
-        log.error("User profile not found for email: {}", email);
-
-        throw new BadCredentialsException("Received invalid token!");
+        log.info("Found user profile for userId: {}", opt.get().getId());
+        return opt.get();
     }
 
     @Override
@@ -144,12 +154,12 @@ public class UserServiceImpl implements UserService {
 
         List<User> searchResults = userRepo.searchUsers(query);
 
-        if (!searchResults.isEmpty()) {
-            log.info("Found {} user(s) matching the query.", searchResults.size());
-            return searchResults;
+        if (searchResults.isEmpty()) {
+            log.info("No users found matching the query: {}", query);
+            return Collections.emptyList();
         }
 
-        log.info("No users found matching the query: {}", query);
-        return Collections.emptyList();
+        log.info("Found {} user(s) matching the query.", searchResults.size());
+        return searchResults;
     }
 }

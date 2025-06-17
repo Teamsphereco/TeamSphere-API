@@ -6,57 +6,44 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.UUID;
 
-@Slf4j
+import static co.teamsphere.api.filters.FilterOrders.REQUEST_LOGGING_FILTER_ORDER;
+
+@Order(REQUEST_LOGGING_FILTER_ORDER)
 public class LoggingFilter implements Filter {
+    private static final Logger LOG = LoggerFactory.getLogger(LoggingFilter.class);
+    private static final TimerThreadLocal TIMER = new TimerThreadLocal();
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
-
-        // Log request start
-        logRequestStart(httpRequest);
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         try {
+            TIMER.start();
+            LOG.info("Start: {} {}", request.getMethod(), request.getRequestURI());
             filterChain.doFilter(servletRequest, servletResponse);
         } finally {
-            // Log request completion
-            logRequestCompletion();
+            long duration = TIMER.stop();
+            LOG.info("Took {}ms to {} {} | method={}, uri={}, duration={}, status={}",
+                duration, request.getMethod(), request.getRequestURI(), request.getMethod(),
+                request.getRequestURI(), duration,response.getStatus());
         }
     }
-
-    private void logRequestStart(HttpServletRequest request) {
-        Instant startTime = Instant.now();
-        MDC.put("startTime", startTime.toString());
-
-        String requestId = request.getHeader("X-Request-ID");
-        if (requestId == null) {
-            requestId = UUID.randomUUID().toString();
+    private static final class TimerThreadLocal extends ThreadLocal<Long>{
+        void start(){ set(System.currentTimeMillis());}
+        long stop(){
+            Long startTime = get();
+            remove();
+            if (startTime == null){
+                return -1;
+            }
+            return System.currentTimeMillis() - startTime;
         }
-        MDC.put("requestId", requestId);
-        MDC.put("httpMethod", request.getMethod());
-        MDC.put("httpRequestURI", request.getRequestURI());
-
-        log.info("Start {} uri={}", request.getMethod(), request.getRequestURI());
-    }
-
-    private void logRequestCompletion() {
-        String startTimeStr = MDC.get("startTime");
-        if (startTimeStr != null) {
-            Instant startTime = Instant.parse(startTimeStr); // Parse stored string to Instant
-            long duration = Instant.now().toEpochMilli() - startTime.toEpochMilli();
-
-            log.info("Took duration={}ms {} uri={}", duration, MDC.get("httpMethod"), MDC.get("httpRequestURI"));
-        } else {
-            log.warn("Unable to calculate duration for requestId={} method={} uri={}. Start time not found in MDC.", MDC.get("requestId"), MDC.get("httpMethod"), MDC.get("httpRequestURI"));
-        }
-
-        MDC.clear();
-
     }
 }

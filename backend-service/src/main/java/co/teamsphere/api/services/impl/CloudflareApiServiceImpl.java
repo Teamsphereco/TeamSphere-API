@@ -62,13 +62,17 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
         ResponseEntity<CloudflareApiResponse> response = null;
 
         try {
-            log.info("Sending Image request to URL: {}", url);
+            log.info("Sending Image request to Cloudflare");
+            long startTime = System.currentTimeMillis();
             response = restTemplate.postForEntity(url, requestEntity, CloudflareApiResponse.class);
+            long duration = System.currentTimeMillis() - startTime;
             if (response.getStatusCode() == HttpStatus.OK) {
-                log.info("{} uploaded successfully to Cloudflare.", body.get("file"));
+                log.info("{} uploaded successfully to Cloudflare |  status=success duration={}ms",
+                    Objects.requireNonNull(response.getBody()).getResult().getFilename(), duration);
                 return response.getBody();
             }
-            log.error("Failed to upload image to Cloudflare. Status code: {}", response.getStatusCode());
+            log.error("Failed to upload image to Cloudflare | status=failed status_code={} duration={}ms",
+                response.getStatusCode(), duration);
         } catch (HttpClientErrorException e){
             assert response != null;
             cloudflareApiResponse.setErrors(Objects.requireNonNull(response.getBody()).getErrors());
@@ -82,24 +86,21 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
     public CloudflareApiResponse deleteImage(String imageID) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", String.format("Bearer %s", cloudflareApiKey));
-
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-    
         String url = apiUrl.replace("{account_id}", cloudflareAccountID) + "/" + imageID;
-    
         CloudflareApiResponse cloudflareApiResponse = new CloudflareApiResponse();
-    
         try {
             log.info("Sending DELETE request to URL: {}", url);
             ResponseEntity<CloudflareApiResponse> response = restTemplate.exchange(
-                url, 
-                org.springframework.http.HttpMethod.DELETE, 
-                requestEntity, 
+                url,
+                org.springframework.http.HttpMethod.DELETE,
+                requestEntity,
                 CloudflareApiResponse.class
             );
-    
+
             if (response.getStatusCode() == HttpStatus.OK) {
-                log.info("ImageID: {} deleted successfully from Cloudflare.");
+                log.info("ImageID: {} deleted successfully from Cloudflare.",
+                    Objects.requireNonNull(response.getBody()).getResult().getFilename());
                 return response.getBody();
             }
             log.error("Failed to delete image from Cloudflare. Status code: {}", response.getStatusCode());
@@ -107,8 +108,6 @@ public class CloudflareApiServiceImpl implements CloudflareApiService {
             log.error("Cloudflare API error: {}", e.getResponseBodyAsString());
             cloudflareApiResponse.setErrors(List.of(e.getMessage()));
         }
-    
         return cloudflareApiResponse;
     }
 }
-    

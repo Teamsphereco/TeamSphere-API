@@ -98,7 +98,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public Chat deleteChat(UUID chatId, UUID userId) throws ChatException, UserException {
+    public Chat deleteChat(UUID chatId, UUID userId, UUID reqUserId) throws ChatException, UserException {
         try {
             log.info("Attempting to delete chat with ID: {} by user with ID: {}", chatId, userId);
 
@@ -106,7 +106,7 @@ public class ChatServiceImpl implements ChatService {
             Chat chat = findChatById(chatId);
 
             // Check if the user has permission to delete the chat
-            if (!chat.getCreatedBy().getId().equals(user.getId()) || chat.getIsGroup()) {
+            if (!chat.getCreatedBy().getId().equals(user.getId()) || (chat.getIsGroup() && chat.getAdmins().stream().noneMatch(u -> u.getId().equals(reqUserId)))) {
                 // If user does not have permission or chat is a group chat, throw an exception
                 throw new ChatException("You don't have permission to delete this chat or the chat is a group chat");
             }

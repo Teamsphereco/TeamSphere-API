@@ -76,12 +76,17 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public void deleteMessage(UUID messageId) throws MessageException {
+    public void deleteMessage(UUID messageId, UUID reqUserId) throws MessageException {
         log.info("Attempting to delete message with ID: {}", messageId);
 
         try {
             Messages messages = messageRepo.findById(messageId).orElseThrow(() -> new MessageException("Message not found with ID: " + messageId));
             log.info("Found message for deletion: {}", messages);
+
+            if (!messages.getUsername().getId().equals(reqUserId) || (messages.getChat().getIsGroup() && messages.getChat().getAdmins().stream().noneMatch(u -> u.getId().equals(reqUserId)))) {
+                log.error("User {} is not part of the chat", reqUserId);
+                throw new MessageException("User is not part of the chat");
+            }
 
             messageRepo.deleteById(messages.getId());
 

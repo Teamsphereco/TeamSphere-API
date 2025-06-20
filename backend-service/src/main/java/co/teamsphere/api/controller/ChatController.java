@@ -226,8 +226,10 @@ public class ChatController {
         @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable UUID chatId,
-                                                     @PathVariable UUID userId) throws ChatException, UserException{
-        Chat chat = chatService.deleteChat(chatId, userId);
+                                                     @PathVariable UUID userId,
+                                                     @RequestHeader("Authorization") String jwt) throws ChatException, UserException{
+        UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+        Chat chat = chatService.deleteChat(chatId, userId, reqUserId);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }

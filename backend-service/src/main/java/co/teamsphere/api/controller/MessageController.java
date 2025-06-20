@@ -137,11 +137,13 @@ public class MessageController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{messageId}")
-    public ResponseEntity<ApiResponses> deleteMessageHandler(@PathVariable UUID messageId) throws MessageException {
+    public ResponseEntity<ApiResponses> deleteMessageHandler(@PathVariable UUID messageId, @RequestHeader("Authorization") String jwt) throws MessageException {
         try {
             log.info("Processing delete message request for message with ID: {}", messageId);
 
-            messageService.deleteMessage(messageId);
+            var userId = jwtTokenProvider.getIdFromToken(jwt);
+
+            messageService.deleteMessage(messageId, userId);
 
             log.info("Message with ID {} deleted successfully", messageId);
 

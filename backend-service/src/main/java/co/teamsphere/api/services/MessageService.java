@@ -19,6 +19,5 @@ public interface MessageService {
 
     Messages findMessageById(UUID messageId) throws MessageException;
 
-    void deleteMessage(UUID messageId) throws MessageException;
-
+    void deleteMessage(UUID messageId, UUID reqUserId) throws MessageException;
 }

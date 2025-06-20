@@ -50,6 +50,7 @@ class MessageServiceImplTest {
             .build();
         chat = new Chat();
         chat.setId(UUID.randomUUID());
+        chat.setIsGroup(false);
         messageId = UUID.randomUUID();
         chatId = chat.getId();
         message = Messages.builder()
@@ -96,7 +97,7 @@ class MessageServiceImplTest {
     @Test
     void deleteMessageRemovesMessageWhenMessageExists() throws MessageException {
         when(messageRepo.findById(messageId)).thenReturn(Optional.of(message));
-        messageService.deleteMessage(messageId);
+        messageService.deleteMessage(messageId, user.getId());
         verify(messageRepo, times(1)).deleteById(messageId);
     }
 
@@ -104,7 +105,7 @@ class MessageServiceImplTest {
     @Test
     void deleteMessageThrowsExceptionWhenMessageNotFound() {
         when(messageRepo.findById(messageId)).thenReturn(Optional.empty());
-        assertThrows(MessageException.class, () -> messageService.deleteMessage(messageId));
+        assertThrows(MessageException.class, () -> messageService.deleteMessage(messageId, user.getId()));
         verify(messageRepo, never()).deleteById(any());
     }
 

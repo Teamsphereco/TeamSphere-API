@@ -26,7 +26,7 @@ public interface ChatService{
 
     Chat removeFromGroup(UUID chatId, UUID userId, UUID reqUser) throws UserException,ChatException;
 
-    Chat deleteChat(UUID chatId, UUID userId) throws ChatException, UserException;
+    Chat deleteChat(UUID chatId, UUID userId, UUID reqUserId) throws ChatException, UserException;
 
     List<ChatSummaryDTO> getChatSummaries(UUID userId, int page, int size) throws ChatException;
 

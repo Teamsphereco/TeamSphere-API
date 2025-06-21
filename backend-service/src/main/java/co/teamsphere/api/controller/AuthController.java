@@ -138,7 +138,7 @@ public class AuthController {
 
             log.info("Generating new JWT token");
             var user = rToken.getUser();
-            String jwtToken = jwtTokenProvider.generateJwtTokenFromEmail(user.getEmail());
+            String jwtToken = jwtTokenProvider.generateJwtTokenFromEmail(user.getEmail(), user.getId());
             String newRefreshToken = refreshTokenService.replaceRefreshToken(user.getEmail());
             if (newRefreshToken == null) {
                 log.error("Error during refresh token replacement");
@@ -276,9 +276,10 @@ public class AuthController {
                 log.info("New user created with email: {}", email);
             }
 
+            // Just incase
             if (googleUser == null) {
-                log.error("Error during Google authentication, user still came out as null");
-                return new ResponseEntity<>(new AuthResponse("This is still!", "", false), HttpStatus.INTERNAL_SERVER_ERROR);
+                log.error("Error during Google authentication, user still came out as null!");
+                throw new Exception("Error during Google authentication!");
             }
 
             // Load UserDetails and set authentication context
@@ -286,7 +287,7 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // Generate JWT token
-            String token = jwtTokenProvider.generateJwtToken(authentication);
+            String token = jwtTokenProvider.generateJwtToken(authentication, googleUser.getId());
             RefreshToken refreshToken = createRefreshToken(googleUser.getId().toString(), email);
 
             AuthResponse authResponse = new AuthResponse(token, refreshToken.getRefreshToken(), true);

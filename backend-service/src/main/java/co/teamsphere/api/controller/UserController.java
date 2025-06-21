@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import co.teamsphere.api.config.JWTTokenProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,12 +38,18 @@ public class UserController {
     private final UserService userService;
 
     private final UserDTOMapper userDTOMapper;
+
+    private final JWTTokenProvider jwtTokenProvider;
+
     public UserController(UserService userService,
-                          UserDTOMapper  userDTOMapper) {
+                          UserDTOMapper  userDTOMapper,
+                          JWTTokenProvider jwtTokenProvider) {
         this.userService = userService;
         this.userDTOMapper = userDTOMapper;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    @PutMapping(value = "/update/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update user details", description = "Updates the details of a user identified by the given user ID.")
     @ApiResponses({
         @ApiResponse(
@@ -58,12 +65,13 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "User not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping(value = "/update/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDTO> updateUserHandler(@ModelAttribute UpdateUserRequest req, @PathVariable UUID userId) throws UserException {
+    public ResponseEntity<UserDTO> updateUserHandler(@ModelAttribute UpdateUserRequest req, @PathVariable UUID userId, @RequestHeader("Authorization") String jwt) throws UserException {
         try {
             log.info("Processing update user request for user with ID: {}", userId);
 
-            User updatedUser = userService.updateUser(userId, req);
+            UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+
+            User updatedUser = userService.updateUser(userId, req, reqUserId);
             UserDTO userDTO = userDTOMapper.toUserDTO(updatedUser);
 
             log.info("User with ID {} updated successfully", userId);

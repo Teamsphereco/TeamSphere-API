@@ -34,6 +34,8 @@ public class JWTTokenProvider {
         log.info("Generating JWT...");
         var currentDate = new Date();
 
+        String authoritiesString = populateAuthorities(authentication.getAuthorities());
+
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setIssuer("Teamsphere.co")
@@ -43,7 +45,7 @@ public class JWTTokenProvider {
                 .setNotBefore(currentDate)
                 .setExpiration(new Date(currentDate.getTime()+86400000))
                 .claim("email", authentication.getName())
-                .claim("authorities", "ROLE_USER")
+                .claim("authorities", authoritiesString)
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }

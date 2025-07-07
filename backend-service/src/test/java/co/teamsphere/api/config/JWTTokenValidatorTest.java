@@ -88,8 +88,9 @@ public class JWTTokenValidatorTest {
 
         when(authentication.getName()).thenReturn("test@example.com");
         when(jwtProperties.getAudience()).thenReturn("Teamsphere");
-        Collection<? extends GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        when(authentication.getAuthorities()).thenReturn(authorities);
+        when(authentication.getAuthorities()).thenReturn(
+            AuthorityUtils.createAuthorityList("ROLE_USER")
+        );
         
         jwtTokenProvider = new JWTTokenProvider(privateKey, jwtProperties);
         jwtTokenValidator = new JWTTokenValidator(publicKey, jwtProperties);

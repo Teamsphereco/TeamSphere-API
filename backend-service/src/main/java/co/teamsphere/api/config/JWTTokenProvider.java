@@ -4,6 +4,7 @@ import java.security.PrivateKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.UUID;
 
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
@@ -29,32 +30,34 @@ public class JWTTokenProvider {
 
     }
 
-    public String generateJwtToken(Authentication authentication) {
+    public String generateJwtToken(Authentication authentication, UUID userId) {
         log.info("Generating JWT...");
         var currentDate = new Date();
+
+        String authoritiesString = populateAuthorities(authentication.getAuthorities());
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setIssuer("Teamsphere.co")
-                .setSubject(authentication.getName())
+                .setSubject(userId.toString())
                 .setAudience(jwtProperties.getAudience())
                 .setIssuedAt(currentDate)
                 .setNotBefore(currentDate)
                 .setExpiration(new Date(currentDate.getTime()+86400000))
                 .claim("email", authentication.getName())
-                .claim("authorities", "ROLE_USER")
+                .claim("authorities", authoritiesString)
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }
 
-    public String generateJwtTokenFromEmail(String email) {
+    public String generateJwtTokenFromEmail(String email, UUID userId) {
         log.info("Generating JWT...");
         var currentDate = new Date();
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setIssuer("Teamsphere.co")
-                .setSubject(email)
+                .setSubject(userId.toString())
                 .setAudience(jwtProperties.getAudience())
                 .setIssuedAt(currentDate)
                 .setNotBefore(currentDate)
@@ -79,11 +82,25 @@ public class JWTTokenProvider {
         return String.valueOf(claims.get("email"));
     }
 
+    public UUID getIdFromToken(String token) {
+        log.info("parsing claims ----------- ");
+
+        token = token.substring(7);
+
+        Claims claims= Jwts.parserBuilder()
+                .setSigningKey(privateKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return UUID.fromString(claims.getSubject());
+    }
+
     public String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
-        var authoritieSet = new HashSet<String>();
+        var authoritiesSet = new HashSet<String>();
         for(GrantedAuthority authority:collection) {
-            authoritieSet.add(authority.getAuthority());
+            authoritiesSet.add(authority.getAuthority());
         }
-        return String.join(",", authoritieSet);
+        return String.join(",", authoritiesSet);
     }
 }

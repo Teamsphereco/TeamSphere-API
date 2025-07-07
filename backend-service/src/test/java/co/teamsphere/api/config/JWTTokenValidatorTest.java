@@ -91,7 +91,7 @@ public class JWTTokenValidatorTest {
         when(authentication.getName()).thenReturn("test@example.com");
         when(jwtProperties.getAudience()).thenReturn("Teamsphere");
     
-        jwtTokenProvider = new JWTTokenProvider(privateKey, publicKey, jwtProperties);
+        jwtTokenProvider = new JWTTokenProvider(privateKey, jwtProperties);
         jwtTokenValidator = new JWTTokenValidator(publicKey, jwtProperties);
     }
 

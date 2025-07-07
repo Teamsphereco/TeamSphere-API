@@ -77,6 +77,8 @@ public class JWTTokenValidatorTest {
         assertTrue(authoritiesString.contains("ROLE_ADMIN"));
         assertEquals("ROLE_USER,ROLE_ADMIN", authoritiesString);
     }
+
+    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() throws NoSuchAlgorithmException {
         MockitoAnnotations.openMocks(this);
@@ -89,7 +91,7 @@ public class JWTTokenValidatorTest {
         when(authentication.getName()).thenReturn("test@example.com");
         when(jwtProperties.getAudience()).thenReturn("Teamsphere");
         when(authentication.getAuthorities()).thenReturn(
-            AuthorityUtils.createAuthorityList("ROLE_USER")
+            (Collection<? extends GrantedAuthority>) AuthorityUtils.createAuthorityList("ROLE_USER")
         );
         
         jwtTokenProvider = new JWTTokenProvider(privateKey, jwtProperties);

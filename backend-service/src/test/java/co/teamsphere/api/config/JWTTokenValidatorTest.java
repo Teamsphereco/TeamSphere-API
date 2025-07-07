@@ -87,15 +87,14 @@ public class JWTTokenValidatorTest {
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
         privateKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
-
+    
         when(authentication.getName()).thenReturn("test@example.com");
         when(jwtProperties.getAudience()).thenReturn("Teamsphere");
-        when(authentication.getAuthorities())
-        .thenReturn((Collection<? extends GrantedAuthority>)
-            List.of(new SimpleGrantedAuthority("ROLE_USER")));
-
-        
-        jwtTokenProvider = new JWTTokenProvider(privateKey, jwtProperties);
+    
+        Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        when(authentication.getAuthorities()).thenReturn(authorities);
+    
+        jwtTokenProvider = new JWTTokenProvider(privateKey, publicKey, jwtProperties);
         jwtTokenValidator = new JWTTokenValidator(publicKey, jwtProperties);
     }
 

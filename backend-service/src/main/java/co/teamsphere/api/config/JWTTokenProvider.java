@@ -1,13 +1,9 @@
 package co.teamsphere.api.config;
 
-import java.security.PrivateKey;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.UUID;
-
+import co.teamsphere.api.config.properties.JwtProperties;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -15,13 +11,13 @@ import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
 
-import co.teamsphere.api.config.properties.JwtProperties;
+import java.security.PrivateKey;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.UUID;
 
 @Service
 @Slf4j

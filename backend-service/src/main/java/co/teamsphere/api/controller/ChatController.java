@@ -3,6 +3,7 @@ package co.teamsphere.api.controller;
 import co.teamsphere.api.DTO.ChatDTO;
 import co.teamsphere.api.DTO.ChatSummaryDTO;
 import co.teamsphere.api.DTOmapper.ChatDTOMapper;
+import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ChatException;
 import co.teamsphere.api.exception.UserException;
 import co.teamsphere.api.models.Chat;
@@ -42,16 +43,20 @@ public class ChatController {
     private final ChatService chatService;
 
     private final UserService userService;
-    
+
     private final ChatDTOMapper chatDTOMapper;
+
+    private final JWTTokenProvider jwtTokenProvider;
 
     public ChatController(ChatService chatService,
                           UserService userService,
-                          ChatDTOMapper chatDTOMapper
+                          ChatDTOMapper chatDTOMapper,
+                            JWTTokenProvider jwtTokenProvider
     ) {
         this.chatService = chatService;
         this.userService = userService;
         this.chatDTOMapper = chatDTOMapper;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @PostMapping("/single")
@@ -75,8 +80,8 @@ public class ChatController {
     public ResponseEntity<ChatDTO> creatChatHandler(@RequestBody SingleChatRequest singleChatRequest,
                                                     @RequestHeader("Authorization")  String jwt) throws UserException {
         log.info("single chat --------");
-        User reqUser = userService.findUserProfile(jwt);
-        Chat chat = chatService.createChat(reqUser.getId(),singleChatRequest.getUserId(),false);
+        UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+        Chat chat = chatService.createChat(reqUserId, singleChatRequest.getUserId(),false);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
@@ -100,8 +105,8 @@ public class ChatController {
     public ResponseEntity<ChatDTO> createGroupHandler(@RequestBody GroupChatRequest groupChatRequest,
                                                       @RequestHeader("Authorization") String jwt)
             throws UserException {
-        User reqUser = userService.findUserProfile(jwt);
-        Chat chat = chatService.createGroup(groupChatRequest, reqUser.getId());
+        UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+        Chat chat = chatService.createGroup(groupChatRequest, reqUserId);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
@@ -144,9 +149,11 @@ public class ChatController {
         @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> addUserToGroupHandler(@PathVariable UUID chatId,
-                                                         @PathVariable UUID userId)
+                                                         @PathVariable UUID userId,
+                                                         @RequestHeader("Authorization") String jwt)
             throws UserException, ChatException {
-        Chat chat = chatService.addUserToGroup(userId, chatId);
+        User reqUser = userService.findUserProfile(jwt);
+        Chat chat = chatService.addUserToGroup(userId, chatId, reqUser);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
@@ -169,10 +176,9 @@ public class ChatController {
     })
     public ResponseEntity<ChatDTO> renameGroupHandler(@PathVariable UUID chatId,
                                                       @RequestBody RenameGroupChatRequest renameGroupRequest,
-                                                      @RequestHeader("Authorization") String jwt)
-            throws ChatException, UserException {
-        User reqUser = userService.findUserProfile(jwt);
-        Chat chat = chatService.renameGroup(chatId, renameGroupRequest.getGroupName(), reqUser.getId());
+                                                      @RequestHeader("Authorization") String jwt) throws ChatException, UserException {
+        UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+        Chat chat = chatService.renameGroup(chatId, renameGroupRequest.getGroupName(), reqUserId);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
@@ -197,8 +203,8 @@ public class ChatController {
                                                           @PathVariable UUID chatId,
                                                           @PathVariable UUID userId)
             throws UserException, ChatException {
-        User reqUser=userService.findUserProfile(jwt);
-        Chat chat = chatService.removeFromGroup(chatId, userId, reqUser.getId());
+        UUID reqUser = jwtTokenProvider.getIdFromToken(jwt);
+        Chat chat = chatService.removeFromGroup(chatId, userId, reqUser);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
@@ -220,8 +226,10 @@ public class ChatController {
         @ApiResponse(responseCode = "403", description = "Unauthorized action")
     })
     public ResponseEntity<ChatDTO> deleteChatHandler(@PathVariable UUID chatId,
-                                                     @PathVariable UUID userId) throws ChatException, UserException{
-        Chat chat = chatService.deleteChat(chatId, userId);
+                                                     @PathVariable UUID userId,
+                                                     @RequestHeader("Authorization") String jwt) throws ChatException, UserException{
+        UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+        Chat chat = chatService.deleteChat(chatId, userId, reqUserId);
         ChatDTO chatDto = chatDTOMapper.toChatDto(chat);
         return new ResponseEntity<>(chatDto, HttpStatus.OK);
     }
@@ -247,10 +255,10 @@ public class ChatController {
             @RequestParam(value = "size", defaultValue = "10") int size) throws ChatException {
         try {
             log.info("Fetching chat summaries for user");
-            User user = userService.findUserProfile(jwt);
+            UUID userId = jwtTokenProvider.getIdFromToken(jwt);
             // Fetch chat summaries with pagination
-            List<ChatSummaryDTO> chatSummaries = chatService.getChatSummaries(user.getId(), page, size);
-            log.info("Retrieved {} chat summaries for user ID: {}", chatSummaries.size(), user.getId());
+            List<ChatSummaryDTO> chatSummaries = chatService.getChatSummaries(userId, page, size);
+            log.info("Retrieved {} chat summaries for user ID: {}", chatSummaries.size(), userId);
             return new ResponseEntity<>(chatSummaries, HttpStatus.OK);
         } catch (ChatException e) {
             log.error("User error fetching chat summaries: {}", e.getMessage());

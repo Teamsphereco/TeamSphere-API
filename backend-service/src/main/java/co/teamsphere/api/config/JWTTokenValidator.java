@@ -40,7 +40,7 @@ public class JWTTokenValidator extends OncePerRequestFilter {
             @NotNull HttpServletResponse response,
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
-        String jwt =request.getHeader(JWTTokenConst.HEADER);
+        String jwt = request.getHeader(JWTTokenConst.HEADER);
 
         if (jwt != null && jwt.startsWith("Bearer ")) {
             try {
@@ -59,8 +59,12 @@ public class JWTTokenValidator extends OncePerRequestFilter {
                     throw new JwtException("Invalid audience: " + audience);
                 }
 
-                String username = claim.getSubject();
+                String username = claim.get("email", String.class);
                 String authorities = claim.get("authorities", String.class);
+
+                if (username == null || authorities == null) {
+                    throw new JwtException("Missing email or authorities in JWT claims");
+                }
 
                 List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 

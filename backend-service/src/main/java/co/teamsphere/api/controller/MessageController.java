@@ -2,10 +2,10 @@ package co.teamsphere.api.controller;
 
 import co.teamsphere.api.DTO.MessageDTO;
 import co.teamsphere.api.DTOmapper.MessageDTOMapper;
+import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ChatException;
 import co.teamsphere.api.exception.MessageException;
 import co.teamsphere.api.models.Messages;
-import co.teamsphere.api.models.User;
 import co.teamsphere.api.request.SendMessageRequest;
 import co.teamsphere.api.response.ApiResponses;
 import co.teamsphere.api.services.MessageService;
@@ -36,14 +36,18 @@ public class MessageController {
     private final MessageDTOMapper messageDTOMapper;
     private final UserService userService;
     private final MessageService messageService;
+    private final JWTTokenProvider jwtTokenProvider;
     public MessageController(UserService userService,
                              MessageService messageService,
-                             MessageDTOMapper messageDTOMapper) {
+                             MessageDTOMapper messageDTOMapper,
+                             JWTTokenProvider jwtTokenProvider) {
         this.userService = userService;
         this.messageService = messageService;
         this.messageDTOMapper = messageDTOMapper;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    @PostMapping("/create")
     @Operation(summary = "Send a message", description = "Sends a message to a user or group chat.")
     @io.swagger.v3.oas.annotations.responses.ApiResponses({
         @ApiResponse(
@@ -60,20 +64,20 @@ public class MessageController {
         @ApiResponse(responseCode = "400", description = "Bad request"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/create")
     public ResponseEntity<MessageDTO> sendMessageHandler(@RequestHeader("Authorization")String jwt, @RequestBody SendMessageRequest req) throws ChatException {
-
         try {
             log.info("Processing send message request to userId: {}", req.getUserId());
 
-            User reqUser = userService.findUserProfile(jwt);
-            req.setUserId(reqUser.getId());
+            UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+
+            // no matter what the userId is, we will always set the userId to the one in the JWT token
+            req.setUserId(reqUserId);
 
             Messages messages = messageService.sendMessage(req);
 
             MessageDTO messageDto = messageDTOMapper.toMessageDto(messages);
 
-            log.info("Message sent successfully by userId: {}", reqUser.getId());
+            log.info("Message sent successfully by userId: {}", reqUserId);
 
             return new ResponseEntity<>(messageDto, HttpStatus.OK);
         } catch (Exception e) {
@@ -98,11 +102,13 @@ public class MessageController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/chat/{chatId}")
-    public ResponseEntity<List<MessageDTO>> getChatsMessageHandler(@PathVariable UUID chatId) throws ChatException {
+    public ResponseEntity<List<MessageDTO>> getChatsMessageHandler(@PathVariable UUID chatId, @RequestHeader("Authorization") String jwt) throws ChatException {
         try {
             log.info("Processing get messages for chat with ID: {}", chatId);
 
-            List<Messages> messages = messageService.getChatsMessages(chatId);
+            UUID reqUserId = jwtTokenProvider.getIdFromToken(jwt);
+
+            List<Messages> messages = messageService.getChatsMessages(chatId, reqUserId);
 
             List<MessageDTO> messageDtos = messageDTOMapper.toMessageDtos(messages);
 
@@ -131,11 +137,13 @@ public class MessageController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{messageId}")
-    public ResponseEntity<ApiResponses> deleteMessageHandler(@PathVariable UUID messageId) throws MessageException {
+    public ResponseEntity<ApiResponses> deleteMessageHandler(@PathVariable UUID messageId, @RequestHeader("Authorization") String jwt) throws MessageException {
         try {
             log.info("Processing delete message request for message with ID: {}", messageId);
 
-            messageService.deleteMessage(messageId);
+            var userId = jwtTokenProvider.getIdFromToken(jwt);
+
+            messageService.deleteMessage(messageId, userId);
 
             log.info("Message with ID {} deleted successfully", messageId);
 

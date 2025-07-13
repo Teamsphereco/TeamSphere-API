@@ -86,15 +86,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
 
             if (request.getFile().isEmpty()
-                    || (!request.getFile().getContentType().equals("image/jpeg")
-                    && !request.getFile().getContentType().equals("image/png"))) {
+                    || (!Objects.equals(request.getFile().getContentType(), "image/jpeg")
+                    && !Objects.equals(request.getFile().getContentType(), "image/png"))) {
                 log.warn("File type not accepted, {}", request.getFile().getContentType());
                 throw new ProfileImageException("Profile Picture type is not allowed!");
             }
 
             // Upload profile picture to Cloudflare
             CloudflareApiResponse responseEntity = cloudflareApiService.uploadImage(request.getFile());
-            String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().get(0));
+            String baseUrl = Objects.requireNonNull(responseEntity.getResult().getVariants().getFirst());
             String profileUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + "public";
 
             var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
@@ -115,7 +115,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            String token = jwtTokenProvider.generateJwtToken(authentication);
+            String token = jwtTokenProvider.generateJwtToken(authentication, newUser.getId());
 
             log.info("Generating refresh token for user with ID: {}", newUser.getId());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(newUser.getEmail());
@@ -147,7 +147,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
 
             Optional<User> optionalUser = userRepository.findByEmail(email);
-            if (!optionalUser.isPresent()) {
+            if (optionalUser.isEmpty()) {
                 log.warn("User with email={} not found", email);
                 throw new BadCredentialsException("Invalid username or password.");
             }
@@ -160,7 +160,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new BadCredentialsException("Invalid username or password.");
             }
 
-            String token = jwtTokenProvider.generateJwtToken(authentication);
+            String token = jwtTokenProvider.generateJwtToken(authentication, optionalUser.get().getId());
 
             log.info("Generating refresh token for user with ID: {}", optionalUser.get().getId());
             RefreshToken refreshToken = createRefreshToken(optionalUser.get().getId().toString(), email);
@@ -186,7 +186,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String pictureUrl = googleUserInfo.getPicture();
 
             // Check if user exists
-            User googleUser = null;
+            User googleUser;
             Optional<User> optionalUser = userRepository.findByEmail(email);
             if (optionalUser.isPresent()) {
                 log.info("Existing user found with userId: {}", optionalUser.get().getId());
@@ -213,15 +213,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
 
-            String token = jwtTokenProvider.generateJwtTokenFromEmail(email);
+            String token = jwtTokenProvider.generateJwtTokenFromEmail(email, googleUser.getId());
             RefreshToken refreshToken = createRefreshToken(googleUser.getId().toString(), email);
             return new AuthResponse(token, refreshToken.getRefreshToken(), true);
         } catch (BadCredentialsException e) {
             log.error("Error during Google authentication: ", e);
             throw new BadCredentialsException("Error during Google authentication");
-        } catch (UserException e) {
-            log.error("Error during Google authentication: ", e);
-            throw new UserException("Error during Google authentication");
         } catch (Exception e) {
             log.error("Error during Google authentication: ", e);
             throw new UserException("Error during Google authentication");

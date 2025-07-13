@@ -15,10 +15,9 @@ public interface MessageService {
 
     Messages sendMessage(SendMessageRequest req) throws UserException, ChatException;
 
-    List<Messages> getChatsMessages(UUID chatId) throws ChatException;
+    List<Messages> getChatsMessages(UUID chatId, UUID reqUserId) throws ChatException;
 
     Messages findMessageById(UUID messageId) throws MessageException;
 
-    void deleteMessage(UUID messageId) throws MessageException;
-
+    void deleteMessage(UUID messageId, UUID reqUserId) throws MessageException;
 }

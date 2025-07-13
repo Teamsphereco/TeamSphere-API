@@ -29,6 +29,7 @@ import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -73,11 +74,12 @@ public class JWTTokenProviderTest {
         SecurityContextHolder.clearContext();
     }
 
-    private String generateValidToken(String audience, String subject, String authorities) {
+    private String generateValidToken(String audience, String subject, String authorities, String UserId) {
         return Jwts.builder()
-                .setSubject(subject)
+                .setSubject(UserId)
                 .setAudience(audience)
                 .claim("authorities", authorities)
+                .claim("email", subject)
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
@@ -86,7 +88,7 @@ public class JWTTokenProviderTest {
     @Test
     void doFilterInternal_validToken_shouldSetAuthentication() throws ServletException, IOException {
         // Arrange
-        String validToken = generateValidToken("Teamsphere", "testuser", "ROLE_USER");
+        String validToken = generateValidToken("Teamsphere", "testuser", "ROLE_USER", UUID.randomUUID().toString());
         when(request.getHeader(JWTTokenConst.HEADER)).thenReturn("Bearer " + validToken);
 
         // Act
@@ -104,7 +106,7 @@ public class JWTTokenProviderTest {
     @Test
     void doFilterInternal_invalidAudience_shouldSendUnauthorizedError() throws ServletException, IOException {
         // Arrange
-        String invalidToken = generateValidToken("WrongAudience", "testuser", "ROLE_USER");
+        String invalidToken = generateValidToken("WrongAudience", "testuser", "ROLE_USER", UUID.randomUUID().toString());
         when(request.getHeader(JWTTokenConst.HEADER)).thenReturn("Bearer " + invalidToken);
 
         // Act
@@ -159,27 +161,28 @@ public class JWTTokenProviderTest {
         verify(response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
-    
+
     @Test
     void generateJwtToken_createsValidToken() {
         // Arrange
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
         Authentication authentication = new UsernamePasswordAuthenticationToken("test@example.com", null, authorities);
-        
+        var userId = UUID.randomUUID();
+
         // Act
-        String token = tokenProvider.generateJwtToken(authentication);
-        
+        String token = tokenProvider.generateJwtToken(authentication, userId);
+
         // Assert
         assertNotNull(token);
-        
+
         // Parse the token to verify contents
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(privateKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        
-        assertEquals("test@example.com", claims.getSubject());
+
+        assertEquals(userId.toString(), claims.getSubject());
         assertEquals("Teamsphere", claims.getAudience());
         assertEquals("test@example.com", claims.get("email"));
         assertEquals("ROLE_USER", claims.get("authorities"));
@@ -187,7 +190,7 @@ public class JWTTokenProviderTest {
         assertNotNull(claims.getIssuedAt());
         assertNotNull(claims.getExpiration());
     }
-    
+
     @Test
     void getEmailFromToken_extractsEmailFromToken() {
         // Arrange
@@ -197,14 +200,14 @@ public class JWTTokenProviderTest {
                 .claim("email", email)
                 .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
-        
+
         // Act
         String extractedEmail = tokenProvider.getEmailFromToken("Bearer " + token);
-        
+
         // Assert
         assertEquals(email, extractedEmail);
     }
-    
+
     @Test
     void populateAuthorities_joinsAuthoritiesWithComma() {
         // Arrange
@@ -212,10 +215,10 @@ public class JWTTokenProviderTest {
                 new SimpleGrantedAuthority("ROLE_USER"),
                 new SimpleGrantedAuthority("ROLE_ADMIN")
         );
-        
+
         // Act
         String result = tokenProvider.populateAuthorities(authorities);
-        
+
         // Assert
         assertTrue(result.contains("ROLE_USER"));
         assertTrue(result.contains("ROLE_ADMIN"));

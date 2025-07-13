@@ -69,30 +69,12 @@ public class JWTTokenProvider {
     }
 
     public String getEmailFromToken(String token) {
-        log.info("parsing claims ----------- ");
-
-        token = token.substring(7);
-
-        Claims claims= Jwts.parserBuilder()
-                .setSigningKey(privateKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
+        Claims claims = parseTokenForClaims(token);
         return String.valueOf(claims.get("email"));
     }
 
     public UUID getIdFromToken(String token) {
-        log.info("parsing claims ----------- ");
-
-        token = token.substring(7);
-
-        Claims claims= Jwts.parserBuilder()
-                .setSigningKey(privateKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
+        Claims claims = parseTokenForClaims(token);
         return UUID.fromString(claims.getSubject());
     }
 
@@ -102,5 +84,28 @@ public class JWTTokenProvider {
             authoritiesSet.add(authority.getAuthority());
         }
         return String.join(",", authoritiesSet);
+    }
+
+    private Claims parseTokenForClaims(String token) {
+        log.info("Parsing claims for token...");
+
+        if (token == null || !token.startsWith("Bearer ")) {
+            log.error("Invalid token format: missing 'Bearer ' prefix or token is null");
+            throw new IllegalArgumentException("Invalid token format");
+        }
+
+        // Remove "Bearer " prefix
+        String actualToken = token.substring(7);
+
+        try {
+            return Jwts.parserBuilder()
+                .setSigningKey(privateKey)
+                .build()
+                .parseClaimsJws(actualToken)
+                .getBody();
+        } catch (Exception e) {
+            log.error("Error parsing JWT token: {}", e.getMessage());
+            throw new IllegalArgumentException("Invalid or malformed token", e);
+        }
     }
 }

@@ -6,7 +6,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.UUID;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -94,7 +99,6 @@ public class JWTTokenProvider {
             throw new IllegalArgumentException("Invalid token format");
         }
 
-        // Remove "Bearer " prefix
         String actualToken = token.substring(7);
 
         try {
@@ -103,9 +107,22 @@ public class JWTTokenProvider {
                 .build()
                 .parseClaimsJws(actualToken)
                 .getBody();
+        } catch (ExpiredJwtException e) {
+            log.warn("Expired JWT token: {}", e.getMessage());
+            throw e; // Re-throw the specific ExpiredJwtException
+        } catch (MalformedJwtException e) {
+            log.warn("Invalid JWT token: {}", e.getMessage());
+            throw e; // Re-throw the specific MalformedJwtException
+        } catch (SignatureException e) {
+            log.warn("Invalid JWT signature: {}", e.getMessage());
+            throw e; // Re-throw the specific SignatureException
+        } catch (UnsupportedJwtException e) {
+            log.warn("Unsupported JWT token: {}", e.getMessage());
+            throw e; // Re-throw the specific UnsupportedJwtException
         } catch (Exception e) {
-            log.error("Error parsing JWT token: {}", e.getMessage());
-            throw new IllegalArgumentException("Invalid or malformed token", e);
+            log.error("Unexpected error parsing JWT token: {}", e.getMessage());
+            throw new RuntimeException("Error parsing JWT token", e); // Catch any other unexpected errors
         }
     }
+
 }

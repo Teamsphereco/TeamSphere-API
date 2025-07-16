@@ -15,26 +15,26 @@ cloudflare:
 server:
   port: 5454
 spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${MYSQL_DEV_USERNAME}
-    password: ${MYSQL_DEV_USER_PASSWORD}
-    url: jdbc:mysql://mysql-dev:3306/${MYSQL_DEV_DATABASE}
-  jpa:
-    database: mysql
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-  rabbitmq:
-    host: rabbitmq-dev
-    username: ${RABBITMQ_DEV_USERNAME}
-    password: ${RABBITMQ_DEV_PASSWORD}
-    port: 61613
-    requested-heartbeat: 580
-  servlet:
-    multipart:
-      max-file-size: 20MB
-      max-request-size: 20MB
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: ${MYSQL_USERNAME}
+        password: ${MYSQL_USER_PASSWORD}
+        url: ${MYSQL_DATABASE_HOST}/${MYSQL_DATABASE}
+    jpa:
+        database: mysql
+        hibernate:
+            ddl-auto: update
+    rabbitmq:
+        host: ${RABBITMQ_HOST}
+        username: ${RABBITMQ_USERNAME}
+        password: ${RABBITMQ_PASSWORD}
+        port: 30716
+        requested-heartbeat: 580
+    servlet:
+        multipart:
+            max-file-size: 20MB
+            max-request-size: 20MB
+
 
 app:
   environment:

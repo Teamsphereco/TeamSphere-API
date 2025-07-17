@@ -18,4 +18,6 @@ ENV JAR_VERSION=teamsphere-backend
 
 COPY --from=builder /app/backend-service/target/*.jar ${JAR_VERSION}.jar
 
+EXPOSE 5454
+
 ENTRYPOINT ["sh", "-c", "java  -jar ${JAR_VERSION}.jar"]

@@ -19,7 +19,7 @@ spring:
         driver-class-name: com.mysql.cj.jdbc.Driver
         username: ${MYSQL_USERNAME}
         password: ${MYSQL_USER_PASSWORD}
-        url: ${MYSQL_DATABASE_HOST}/${MYSQL_DATABASE}
+        url: ${MYSQL_DATABASE_DEV_HOST}
     jpa:
         database: mysql
         hibernate:

@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,11 +33,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepo;
     private final JWTTokenProvider jwtTokenProvider;
     private final CloudflareApiService cloudflareApiService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public UserServiceImpl( UserRepository userRepo, JWTTokenProvider jwtTokenProvider, CloudflareApiService cloudflareApiService) {
+    public UserServiceImpl( UserRepository userRepo, JWTTokenProvider jwtTokenProvider, CloudflareApiService cloudflareApiService, RedisTemplate<String, Object> redisTemplate) {
         this.userRepo = userRepo;
         this.jwtTokenProvider = jwtTokenProvider;
         this.cloudflareApiService = cloudflareApiService;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -116,15 +120,26 @@ public class UserServiceImpl implements UserService {
     public User findUserById(UUID userId) throws UserException {
         log.info("Attempting to find user by ID: {}", userId);
 
+        var cacheKey = "user:" + userId.toString();
+        User cachedUser = (User) redisTemplate.opsForValue().get(cacheKey);
+
+        if (cachedUser != null) {
+            log.info("User found in cache with ID: {}", userId);
+            return cachedUser;
+        }
+
         Optional<User> opt = userRepo.findById(userId);
 
         if (opt.isEmpty()) {
             log.error("ERROR: User not found with ID: {}", userId);
-            throw new UserException("user doesnt exist with the id: " + userId);
+            throw new UserException("User doesn't exist with the id: " + userId);
         }
 
         User user = opt.get();
         log.info("Found user with ID {}: {}", userId, user);
+
+        redisTemplate.opsForValue().set(cacheKey, user, 60, TimeUnit.HOURS);
+        log.info("User cached with key: {}", cacheKey);
 
         return user;
     }

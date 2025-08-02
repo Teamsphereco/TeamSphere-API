@@ -55,7 +55,7 @@ public class JWTTokenProviderTest {
     @Mock
     private JwtProperties jwtProperties;
 
-    private JWTTokenValidator tokenValidator;
+    private JWTTokenFilter tokenValidator;
     private JWTTokenProvider tokenProvider;
 
     @BeforeEach
@@ -69,7 +69,7 @@ public class JWTTokenProviderTest {
         publicKey = keyPair.getPublic();
 
         when(jwtProperties.getAudience()).thenReturn("Teamsphere");
-        tokenValidator = new JWTTokenValidator(publicKey, jwtProperties);
+        tokenValidator = new JWTTokenFilter(publicKey, jwtProperties);
         tokenProvider = new JWTTokenProvider(privateKey, jwtProperties);
         SecurityContextHolder.clearContext();
     }

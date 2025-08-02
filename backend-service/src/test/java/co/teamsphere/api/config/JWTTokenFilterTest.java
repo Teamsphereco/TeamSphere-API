@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -42,7 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-public class JWTTokenValidatorTest {
+public class JWTTokenFilterTest {
     @Mock
     private Authentication authentication;
 
@@ -60,7 +59,7 @@ public class JWTTokenValidatorTest {
     @Mock
     private FilterChain filterChain;
 
-    private JWTTokenValidator jwtTokenValidator;
+    private JWTTokenFilter jwtTokenFilter;
 
     private PrivateKey privateKey;
 
@@ -87,12 +86,12 @@ public class JWTTokenValidatorTest {
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
         privateKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
-    
+
         when(authentication.getName()).thenReturn("test@example.com");
         when(jwtProperties.getAudience()).thenReturn("Teamsphere");
-    
+
         jwtTokenProvider = new JWTTokenProvider(privateKey, jwtProperties);
-        jwtTokenValidator = new JWTTokenValidator(publicKey, jwtProperties);
+        jwtTokenFilter = new JWTTokenFilter(publicKey, jwtProperties);
     }
 
     @Test
@@ -108,12 +107,12 @@ public class JWTTokenValidatorTest {
 
         when(request.getHeader(JWTTokenConst.HEADER)).thenReturn("Bearer "+token);
 
-        jwtTokenValidator.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         // Assert authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // This has caused me too much pain due to stupid type errors, will fix later 
+        // This has caused me too much pain due to stupid type errors, will fix later
         // assertNotNull(authentication);
         assertEquals(authentication.getName(), "test@example.com");
         // assertTrue(AuthorityUtils.authorityListToSet(authentication.getAuthorities()).contains("ROLE_USER"));

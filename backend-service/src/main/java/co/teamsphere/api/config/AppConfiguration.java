@@ -45,7 +45,7 @@ public class AppConfiguration {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(new JWTTokenValidator(publicKey, jwtProperties), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenFilter(publicKey, jwtProperties), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 

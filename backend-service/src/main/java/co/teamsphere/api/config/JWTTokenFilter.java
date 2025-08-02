@@ -23,12 +23,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JWTTokenValidator extends OncePerRequestFilter {
+public class JWTTokenFilter extends OncePerRequestFilter {
     private final PublicKey publicKey;
 
     private final JwtProperties jwtProperties;
 
-    public JWTTokenValidator(PublicKey publicKey, JwtProperties jwtProperties) {
+    public JWTTokenFilter(PublicKey publicKey, JwtProperties jwtProperties) {
         this.publicKey = publicKey;
         this.jwtProperties = jwtProperties;
     }

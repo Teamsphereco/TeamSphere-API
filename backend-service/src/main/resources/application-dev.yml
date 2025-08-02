@@ -8,12 +8,17 @@ jwt:
   publicKey: ${PUBLIC_KEY}
   privateKey: ${PRIVATE_KEY}
   audience: "localhost:3000"
+
 cloudflare:
   api:
     accountID: ${CLOUDFLARE_ACCOUNTID}
     key: ${CLOUDFLARE_KEY}
+
 server:
   port: 5454
+  tomcat:
+      connection-timeout: 30000
+
 spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
@@ -34,12 +39,35 @@ spring:
         multipart:
             max-file-size: 20MB
             max-request-size: 20MB
+    data:
+        redis:
+            host: localhost # TODO: change to vault var before PR
+            port: 6379 # TODO: change to vault var before PR
+            timeout: 2000ms # TODO: change to vault var before PR
+            jedis:
+                pool:
+                    max-active: 20 # TODO: change to vault var before PR
+                    max-idle: 10 # TODO: change to vault var before PR
+                    min-idle: 2 # TODO: change to vault var before PR
 
+resilience4j:
+    ratelimiter:
+        instances:
+            userService:
+                limit-for-period: 10  # # of requests allowed per period
+                limit-refresh-period: 60s  # Time period for rate limiting
+                timeout-duration: 1s  # How long to wait for permission
+                register-health-indicator: true
+                event-consumer-buffer-size: 100
 
 app:
   environment:
     ALLOWED_ORIGINS:
       - ${ALLOWED_ORIGIN}
+    cache:
+        message-ttl: 300
+        chat-ttl: 600
+        user-ttl: 1800
 
 management:
   endpoints:
@@ -51,6 +79,7 @@ management:
       enabled: true
     build:
       enabled: true
+
 info:
   app:
     version: ${APP_VERSION}

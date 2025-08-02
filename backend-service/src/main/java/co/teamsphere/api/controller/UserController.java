@@ -3,8 +3,10 @@ package co.teamsphere.api.controller;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import co.teamsphere.api.config.JWTTokenProvider;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,12 +43,16 @@ public class UserController {
 
     private final JWTTokenProvider jwtTokenProvider;
 
+    private final RedisTemplate<String, Object> redisTemplate;
+
     public UserController(UserService userService,
                           UserDTOMapper  userDTOMapper,
-                          JWTTokenProvider jwtTokenProvider) {
+                          JWTTokenProvider jwtTokenProvider,
+                          RedisTemplate<String, Object> redisTemplate) {
         this.userService = userService;
         this.userDTOMapper = userDTOMapper;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.redisTemplate = redisTemplate;
     }
 
     @PutMapping(value = "/update/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -112,8 +118,6 @@ public class UserController {
             return new ResponseEntity<>(userDTO, HttpStatus.ACCEPTED);
         } catch (Exception e) {
             log.error("Error during get user profile process", e);
-            // We might want to handle this exception differently.
-            // Here, I'm letting it propagate to the client as a 500 Internal Server Error.
             throw new RuntimeException("Error during get user profile process", e);
         }
     }
@@ -138,11 +142,19 @@ public class UserController {
         try {
             log.info("Processing search users by name={}", name);
 
+            name = name.trim();
+
+            // potential issue here with casting
+            var cacheKey = "search:users:" + name;
+            var userList = (HashSet<UserDTO>) redisTemplate.opsForValue().get(cacheKey);
+
             List<User> users = userService.searchUser(name);
 
             HashSet<User> set = new HashSet<>(users);
 
             HashSet<UserDTO> userDtos = userDTOMapper.toUserDtos(set);
+
+            redisTemplate.opsForValue().set(cacheKey, set, 10, TimeUnit.MINUTES);
 
             log.info("Users search completed successfully for name={}", name);
 

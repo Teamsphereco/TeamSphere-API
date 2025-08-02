@@ -3,7 +3,6 @@ package co.teamsphere.api.controller;
 import co.teamsphere.api.DTO.UserDTO;
 import co.teamsphere.api.DTOmapper.UserDTOMapper;
 import co.teamsphere.api.config.JWTTokenProvider;
-import co.teamsphere.api.config.JWTTokenValidator;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.UserException;
 import co.teamsphere.api.helpers.TestDataBuilder;

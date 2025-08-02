@@ -8,12 +8,17 @@ jwt:
   publicKey: ${PUBLIC_KEY}
   privateKey: ${PRIVATE_KEY}
   audience: "localhost:3000"
+
 cloudflare:
   api:
     accountID: ${CLOUDFLARE_ACCOUNTID}
     key: ${CLOUDFLARE_KEY}
+
 server:
-  port: 5454
+    port: 5454
+    tomcat:
+        connection-timeout: 15000 # TODO: change to vault var when pushing
+
 spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver

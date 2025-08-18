@@ -1,0 +1,523 @@
+{
+	"info": {
+		"_postman_id": "b61e7d07-6337-45fd-b906-e78f9ec5f51f",
+		"name": "YipYap",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21539203"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"john_doe3\",\r\n    \"password\": \"password123\",\r\n    \"email\": \"john.doe3@example.com\",\r\n    \"profile_image\": \"profile.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5454/auth/signup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat",
+			"item": [
+				{
+					"name": "Single",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJZaXBZYXBUaW1lIiwiaWF0IjoxNzA3ODg3MjY2LCJleHAiOjE3MDc5NzM2NjYsImVtYWlsIjoiam9obi5kb2UyQGV4YW1wbGUuY29tIn0.qieFhDxtS9-bHVjdmpDY7fV1pKlhxSryszEPDlpNPpLdHYzAb6DW9YWUdsg79dPnTrGEIV7eoDOpeaB_h1CAEA",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"userId\": 2}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5454/api/chat/single",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"single"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{chatId}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/chat/{chatId}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"{chatId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Group",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJZaXBZYXBUaW1lIiwiaWF0IjoxNzA3ODg3ODE0LCJleHAiOjE3MDc5NzQyMTQsImVtYWlsIjoiam9obi5kb2UzQGV4YW1wbGUuY29tIn0.K0sUBVti-JCg52LudYlu_vVsD0CrP8vQLQQiXfpFDJE4vse2AjDS0ABLjVcrlapduKZrCQ0JAtTbS499PyUIYg",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userIds\": [1, 2, 53],\r\n  \"chat_name\": \"Example Group Chat\",\r\n  \"chat_image\": \"group_image_url.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5454/api/chat/group",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"group"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer   eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJZaXBZYXBUaW1lIiwiaWF0IjoxNzA3ODg3ODE0LCJleHAiOjE3MDc5NzQyMTQsImVtYWlsIjoiam9obi5kb2UzQGV4YW1wbGUuY29tIn0.K0sUBVti-JCg52LudYlu_vVsD0CrP8vQLQQiXfpFDJE4vse2AjDS0ABLjVcrlapduKZrCQ0JAtTbS499PyUIYg",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5454/api/chat/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{chatId}/add/{userId}",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/chat/{chatId}/add/{userId}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"{chatId}",
+								"add",
+								"{userId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{chatId}/rename",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/chat/{chatId}/rename",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"{chatId}",
+								"rename"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/{chatId}/remove/{userId}",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/chat/{chatId}/remove/{userId}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"{chatId}",
+								"remove",
+								"{userId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete/{chatId}/{userId}",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/chat/delete/{chatId}/{userId}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"chat",
+								"delete",
+								"{chatId}",
+								"{userId}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Message",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJZaXBZYXBUaW1lIiwiaWF0IjoxNzA3ODg3MjY2LCJleHAiOjE3MDc5NzM2NjYsImVtYWlsIjoiam9obi5kb2UyQGV4YW1wbGUuY29tIn0.qieFhDxtS9-bHVjdmpDY7fV1pKlhxSryszEPDlpNPpLdHYzAb6DW9YWUdsg79dPnTrGEIV7eoDOpeaB_h1CAEA",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5454/api/message/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"message",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chat/{chatId}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/message/chat/{chatId}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"message",
+								"chat",
+								"{chatId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{messageId}",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/message/{messageId}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"message",
+								"{messageId}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "update/{userId}",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5454/api/user/update/{userId}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"user",
+								"update",
+								"{userId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJZaXBZYXBUaW1lIiwiaWF0IjoxNzA2NjY4NDc0LCJleHAiOjE3MDY3NTQ4NzQsImVtYWlsIjoiam9obi5kb2VAZXhhbXBsZS5jb20ifQ.fy0CIE1dqF22euCmn9I7K5j54uBTvk8Y_7wdBL5lIPhdeJpjrf9ctrCKjbcHkRiwV6hwxAtkWUxBfklNzPNXNw",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5454/api/user/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"user",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJZaXBZYXBUaW1lIiwiaWF0IjoxNzA3ODg3ODE0LCJleHAiOjE3MDc5NzQyMTQsImVtYWlsIjoiam9obi5kb2UzQGV4YW1wbGUuY29tIn0.K0sUBVti-JCg52LudYlu_vVsD0CrP8vQLQQiXfpFDJE4vse2AjDS0ABLjVcrlapduKZrCQ0JAtTbS499PyUIYg",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"john_doe3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5454/api/user/search?name=john_doe3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"user",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "john_doe3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RealTimeMsq",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJZaXBZYXBUaW1lIiwiaWF0IjoxNzA3ODg3ODE0LCJleHAiOjE3MDc5NzQyMTQsImVtYWlsIjoiam9obi5kb2UzQGV4YW1wbGUuY29tIn0.K0sUBVti-JCg52LudYlu_vVsD0CrP8vQLQQiXfpFDJE4vse2AjDS0ABLjVcrlapduKZrCQ0JAtTbS499PyUIYg",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"Things are fine here?\",\r\n    \"timeStamp\": \"2022-02-14T12:30:00\",\r\n    \"is_read\": false,\r\n    \"username\": {\r\n        \"userId\": 1,\r\n        \"username\": \"john_doe\",\r\n        \"email\": \"john.doe@example.com\"\r\n    },\r\n    \"chat\": {\r\n        \"chat_name\": \"Example Group Chat\",\r\n        \"created_by\": {\r\n            \"id\": 53,\r\n            \"username\": \"john_doe3\",\r\n            \"email\": \"john.doe3@example.com\",\r\n            \"profile_picture\": null\r\n        },\r\n        \"users\": [\r\n            {\r\n                \"id\": 53,\r\n                \"username\": \"john_doe3\",\r\n                \"email\": \"john.doe3@example.com\",\r\n                \"profile_picture\": null\r\n            },\r\n            {\r\n                \"id\": 1,\r\n                \"username\": \"john_doe\",\r\n                \"email\": \"john.doe@example.com\",\r\n                \"profile_picture\": null\r\n            },\r\n            {\r\n                \"id\": 2,\r\n                \"username\": \"john_doe\",\r\n                \"email\": \"john.doe1@example.com\",\r\n                \"profile_picture\": null\r\n            }\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5454/api/send/message",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5454",
+							"path": [
+								"api",
+								"send",
+								"message"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Home",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5454/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5454",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

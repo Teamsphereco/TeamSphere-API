@@ -7,7 +7,7 @@ logging:
 jwt:
   publicKey: ${PUBLIC_KEY}
   privateKey: ${PRIVATE_KEY}
-  audience: "localhost:3000"
+  audience: "teamsphere.co"
 cloudflare:
   api:
     accountID: ${CLOUDFLARE_ACCOUNTID}
@@ -25,7 +25,7 @@ spring:
         hibernate:
             ddl-auto: update
     rabbitmq:
-        host: ${RABBITMQ_HOST}
+        host: ${RABBITMQ_PROD_HOST}
         username: ${RABBITMQ_USERNAME}
         password: ${RABBITMQ_PASSWORD}
         port: 30716

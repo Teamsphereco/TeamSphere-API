@@ -25,7 +25,7 @@ spring:
         hibernate:
             ddl-auto: update
     rabbitmq:
-        host: ${RABBITMQ_HOST}
+        host: ${RABBITMQ_DEV_HOST}
         username: ${RABBITMQ_USERNAME}
         password: ${RABBITMQ_PASSWORD}
         port: 30716

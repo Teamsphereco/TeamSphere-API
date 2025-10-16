@@ -28,7 +28,7 @@ spring:
         host: ${RABBITMQ_PROD_HOST}
         username: ${RABBITMQ_USERNAME}
         password: ${RABBITMQ_PASSWORD}
-        port: 30716
+        port: ${RABBITMQ_PORT}
         requested-heartbeat: 580
     servlet:
         multipart:

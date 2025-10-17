@@ -1,24 +1,5 @@
 package co.teamsphere.api.services.impl;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-
 import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.UserException;
@@ -31,10 +12,24 @@ import co.teamsphere.api.response.CloudflareApiResponse;
 import co.teamsphere.api.services.AuthenticationService;
 import co.teamsphere.api.services.CloudflareApiService;
 import co.teamsphere.api.services.RefreshTokenService;
-import co.teamsphere.api.utils.GoogleAuthRequest;
-import co.teamsphere.api.utils.GoogleUserInfo;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 @Validated
@@ -172,56 +167,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (UserException e) {
             log.error("Unexpected error during login process", e);
             throw new UserException("Unexpected error during login process.");
-        }
-    }
-
-    @Override
-    @Transactional
-    public AuthResponse loginWithGoogle(GoogleAuthRequest request) throws UserException {
-        try {
-            GoogleUserInfo googleUserInfo = request.getGoogleUserInfo();
-
-            String email = googleUserInfo.getEmail();
-            String username = googleUserInfo.getName();
-            String pictureUrl = googleUserInfo.getPicture();
-
-            // Check if user exists
-            User googleUser;
-            Optional<User> optionalUser = userRepository.findByEmail(email);
-            if (optionalUser.isPresent()) {
-                log.info("Existing user found with userId: {}", optionalUser.get().getId());
-                googleUser = optionalUser.get();
-            } else {
-                // Register a new user if not exists
-                var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
-                var user = User.builder()
-                        .email(email)
-                        .username(username)
-                        .password(passwordEncoder.encode(UUID.randomUUID().toString())) // consider adding this cause the password field should NEVER be null
-                        .profilePicture(pictureUrl)
-                        .createdDate(currentDateTime)
-                        .lastUpdatedDate(currentDateTime)
-                        .build();
-
-                googleUser = userRepository.saveAndFlush(user);
-                log.info("New user created with email: {}", email);
-            }
-
-            // Load UserDetails and set authentication context
-            SecurityContext context = SecurityContextHolder.getContext();
-            Authentication authentication = new UsernamePasswordAuthenticationToken(email, null);
-            context.setAuthentication(authentication);
-            SecurityContextHolder.setContext(context);
-
-            String token = jwtTokenProvider.generateJwtTokenFromEmail(email, googleUser.getId());
-            RefreshToken refreshToken = createRefreshToken(googleUser.getId().toString(), email);
-            return new AuthResponse(token, refreshToken.getRefreshToken(), true);
-        } catch (BadCredentialsException e) {
-            log.error("Error during Google authentication: ", e);
-            throw new BadCredentialsException("Error during Google authentication");
-        } catch (Exception e) {
-            log.error("Error during Google authentication: ", e);
-            throw new UserException("Error during Google authentication");
         }
     }
 

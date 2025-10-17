@@ -24,17 +24,10 @@ spring:
         database: mysql
         hibernate:
             ddl-auto: update
-    rabbitmq:
-        host: ${RABBITMQ_DEV_HOST}
-        username: ${RABBITMQ_USERNAME}
-        password: ${RABBITMQ_PASSWORD}
-        port: ${RABBITMQ_PORT}
-        requested-heartbeat: 580
     servlet:
         multipart:
             max-file-size: 20MB
             max-request-size: 20MB
-
 
 app:
   environment:

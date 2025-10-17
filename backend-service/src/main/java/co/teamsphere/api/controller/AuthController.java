@@ -1,50 +1,34 @@
 package co.teamsphere.api.controller;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-
 import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.RefreshTokenException;
 import co.teamsphere.api.exception.UserException;
-import co.teamsphere.api.models.RefreshToken;
-import co.teamsphere.api.models.User;
-import co.teamsphere.api.repository.UserRepository;
 import co.teamsphere.api.request.LoginRequest;
 import co.teamsphere.api.request.RefreshTokenRequest;
 import co.teamsphere.api.request.SignupRequest;
 import co.teamsphere.api.response.AuthResponse;
 import co.teamsphere.api.services.AuthenticationService;
 import co.teamsphere.api.services.RefreshTokenService;
-import co.teamsphere.api.utils.GoogleAuthRequest;
-import co.teamsphere.api.utils.GoogleUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
@@ -56,21 +40,13 @@ public class AuthController {
 
     private final RefreshTokenService refreshTokenService;
 
-    private final UserRepository userRepository;
-
-    private final PasswordEncoder passwordEncoder;
-
     public AuthController(JWTTokenProvider jwtTokenProvider,
                           AuthenticationService authenticationService,
-                          RefreshTokenService refreshTokenService,
-                          UserRepository userRepository,
-                          PasswordEncoder passwordEncoder
+                          RefreshTokenService refreshTokenService
     ) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationService = authenticationService;
         this.refreshTokenService = refreshTokenService;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/verify")
@@ -118,7 +94,7 @@ public class AuthController {
     })
     public ResponseEntity<?> refreshTest(@RequestBody RefreshTokenRequest request) throws RefreshTokenException {
         try {
-            // there is a way to do this with just optionals and maps, but you are a funny guy if you think im writing that out (its not readable)
+            // there is a way to do this with just optionals and maps, but you are a funny guy if you think im writing that out (it's not readable)
             log.info("Processing refresh token request");
             var refreshToken = refreshTokenService.findRefreshToken(request.getRefreshToken());
 
@@ -223,87 +199,5 @@ public class AuthController {
             log.error("Unexpected error during login process", e);
             throw new UserException("Unexpected error during login process.");
         }
-    }
-
-    @PostMapping("/google")
-    @Transactional // move business logic to service layer
-    @Operation(summary = "Authenticate via Google", description = "login/signup via Google OAuth.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-                description = "Authentication successful",
-                content = @Content(
-                        mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = @Schema(implementation = AuthResponse.class)
-                )
-            ),
-        @ApiResponse(responseCode = "500", description = "Google authentication failed")
-    })
-    public ResponseEntity<AuthResponse> authenticateWithGoogleMethod(
-            @Schema(
-                    description = "Google OAuth request body",
-                    implementation = GoogleAuthRequest.class
-            )
-            @RequestPart("googleUser")
-            @RequestBody GoogleAuthRequest request) {
-        try {
-            log.info("Processing Google authentication request");
-
-            GoogleUserInfo googleUserInfo = request.getGoogleUserInfo();
-
-            String email = googleUserInfo.getEmail();
-            String username = googleUserInfo.getName();
-            String pictureUrl = googleUserInfo.getPicture();
-
-            // Check if user exists
-            User googleUser = null;
-            Optional<User> optionalUser = userRepository.findByEmail(email);
-            if (optionalUser.isPresent()) {
-                log.info("Existing user found with userId: {}", optionalUser.get().getId());
-                googleUser = optionalUser.get();
-            } else {
-                // Register a new user if not exists
-                var currentDateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC);
-                var user = User.builder()
-                        .email(email)
-                        .username(username)
-                        .password(passwordEncoder.encode(UUID.randomUUID().toString())) // consider adding this cause a userpass field should NEVER be null
-                        .profilePicture(pictureUrl)
-                        .createdDate(currentDateTime)
-                        .lastUpdatedDate(currentDateTime)
-                        .build();
-
-                googleUser = userRepository.save(user);
-                log.info("New user created with email: {}", email);
-            }
-
-            // Just incase
-            if (googleUser == null) {
-                log.error("Error during Google authentication, user still came out as null!");
-                throw new Exception("Error during Google authentication!");
-            }
-
-            // Load UserDetails and set authentication context
-            Authentication authentication = new UsernamePasswordAuthenticationToken(email, null);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // Generate JWT token
-            String token = jwtTokenProvider.generateJwtToken(authentication, googleUser.getId());
-            RefreshToken refreshToken = createRefreshToken(googleUser.getId().toString(), email);
-
-            AuthResponse authResponse = new AuthResponse(token, refreshToken.getRefreshToken(), true);
-            return new ResponseEntity<>(authResponse, HttpStatus.OK);
-        } catch (Exception e) {
-            log.error("Error during Google authentication: ", e);
-            return new ResponseEntity<>(new AuthResponse("Error during Google authentication!" + e.getMessage(), "", false), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private RefreshToken createRefreshToken(String userID, String email) throws UserException {
-        RefreshToken refreshToken = refreshTokenService.findByUserId(userID);
-        if (refreshToken == null || refreshToken.getExpiredAt().compareTo(Instant.now()) < 0) {
-            refreshToken = refreshTokenService.createRefreshToken(email);
-        }
-
-        return refreshToken;
     }
 }

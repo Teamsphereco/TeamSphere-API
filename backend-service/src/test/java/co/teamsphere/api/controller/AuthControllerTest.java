@@ -1,15 +1,12 @@
 package co.teamsphere.api.controller;
 
-import co.teamsphere.api.config.JWTTokenProvider;
 import co.teamsphere.api.exception.ProfileImageException;
 import co.teamsphere.api.exception.UserException;
 import co.teamsphere.api.models.RefreshToken;
-import co.teamsphere.api.repository.UserRepository;
 import co.teamsphere.api.request.LoginRequest;
 import co.teamsphere.api.request.SignupRequest;
 import co.teamsphere.api.response.AuthResponse;
 import co.teamsphere.api.services.AuthenticationService;
-import co.teamsphere.api.services.RefreshTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +20,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,21 +29,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthControllerTest {
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private JWTTokenProvider jwtTokenProvider;
-
     @Mock
     private AuthenticationService authenticationService;
-
-    @Mock
-    private RefreshTokenService refreshTokenService;
 
     @Mock
     private SecurityContext securityContext;
